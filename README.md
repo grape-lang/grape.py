@@ -7,6 +7,7 @@ Features
 --------
 
 - Statically typed
+- Functional
 - Garbage-collected
 - No mutable pointers
 

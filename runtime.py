@@ -17,9 +17,10 @@ class ErrorHandler:
 
     def report(self, kind, line, col, message = ""): 
         self.hadError = True
-        error = kind + " on line " + str(line) 
+        error = kind + " on line " + str(line) + " at " + str(col)
 
         if message:
             error += ": " + message
     
         print(term.colors.FAIL + error + term.colors.NORMAL)
+        return error

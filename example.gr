@@ -1,4 +1,7 @@
 namespace grape do
+    use @repl
+    use @scanner
+
     fn main(argv) do
         if(len(argv) > 2) do
             print("Usage: grape [script]")
