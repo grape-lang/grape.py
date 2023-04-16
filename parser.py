@@ -79,7 +79,7 @@ class Parser():
         if self.match([TokenType.FALSE]): return Literal(False)
         if self.match([TokenType.TRUE]): return Literal(True)
 
-        if self.match([TokenType.NUMBER, TokenType.STRING]):
+        if self.match([TokenType.NUMBER, TokenType.STRING, TokenType.ATOM]):
             return Literal(self.previous().literal)
         
         if self.match([TokenType.LEFT_BRACKET]): 

@@ -177,7 +177,9 @@ class Scanner:
 
     def handleAtom(self):
         while self.isAlphaNumeric(self.peek()): self.advance()
-        self.addToken(TokenType.ATOM)
+
+        literal = self.currentString()
+        self.addToken(TokenType.ATOM, literal)
 
     def handleIdentifier(self):
         while self.isAlphaNumeric(self.peek()): self.advance()
