@@ -1,0 +1,37 @@
+namespace grape do
+    fn main(argv) do
+        if(len(argv) > 2) do
+            print("Usage: grape [script]")
+
+        else if(len(argv) == 2) do
+            case runFile(argv[1]) do
+                Ok, do
+                    exit()
+                end
+                Error, do
+                    exit(65)
+                end
+            end 
+        else
+            repl()
+        end
+    end
+
+    fn runFile(filename) do
+        filename
+        |> read_file()
+        |> run()
+    end
+
+    fn repl() do
+        @repl.input()
+        |> run()
+
+        repl()
+    end
+
+    fn run(source) do
+        tokens = @scanner.scanTokens(source)
+        print(tokens)
+    end
+end
