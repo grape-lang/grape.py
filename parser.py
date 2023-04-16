@@ -148,7 +148,7 @@ class Parser():
         if token.token_type == TokenType.EOF:
             error = self.errorHandler.report("Syntax error", token.line, "EOF", message)
         else:
-            error = self.errorHandler.report("Syntaxt error", token.line, "'" + token.lexeme + "'", message)
+            error = self.errorHandler.report("Syntax error", token.line, "'" + token.lexeme + "'", message)
 
         raise ParseError(error)
 

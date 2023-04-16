@@ -3,6 +3,7 @@ from runtime import Repl
 from runtime import ErrorHandler
 from compiler import Scanner
 from compiler import Parser
+from compiler import Interpreter
 
 class Grape:
     def __init__(self):
@@ -30,7 +31,13 @@ class Grape:
         expression = parser.parse()
 
         if self.errorHandler.hadError: return
-        print(expression)
+        
+        interpreter = Interpreter(self, expression)
+        output = interpreter.interpret()
+
+        if self.errorHandler.hadError: return
+
+        print(output)
 
 if __name__ == "__main__":
     grape = Grape()

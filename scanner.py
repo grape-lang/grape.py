@@ -1,4 +1,4 @@
-import utils
+from utils import *
 from enum import Enum
 
 class TokenType(Enum):
@@ -161,16 +161,24 @@ class Scanner:
             self.advance()
 
     def handleNumber(self):
+        global maxDecimals
+
         while self.peek().isdigit(): self.advance()
+        currentDecimal = 0
 
         if self.peek() == "." and self.doublePeek().isdigit():
             self.advance()
-            while self.peek().isdigit(): self.advance()
+            while self.peek().isdigit(): 
+                self.advance()
+                currentDecimal += 1
 
-        self.addToken(TokenType.NUMBER, float(self.currentString()))
+        if currentDecimal > maxDecimals:
+            self.errorHandler.warn(self.line, "The max amount of decimals is " + str(maxDecimals) + ". Your value is being rounded up.")
+        
+        self.addToken(TokenType.NUMBER, round(Decimal(self.currentString()), 3))
 
     def isAtomChar(self, c):
-        return c in utils.charRange("A", "Z") or c == "@"
+        return c in charRange("A", "Z") or c == "@"
 
     def isIdentifierChar(self, c):
         return self.isAlpha(c)
@@ -192,16 +200,14 @@ class Scanner:
         self.addToken(TokenType.IDENTIFIER)
 
     def isAlpha(self, c):
-        return c in utils.charRange("a", "z") or c == "_"
+        return c in charRange("a", "z") or c == "_"
 
     def isAlphaNumeric(self, c):
         return self.isAlpha(c) or c.isdigit()
 
-    def syntaxError(self, unexpectedString = ""):
+    def syntaxError(self, unexpectedString = "", message = ""):
         if unexpectedString != "":
-            message = "Unexpected \"" + unexpectedString + "\""
-        else:
-            message = ""
+            message = "Unexpected \"" + unexpectedString + "\". " + message
 
         self.errorHandler.report("Syntax error", self.line, self.current, message)
 
