@@ -6,18 +6,31 @@ from expr import Literal
 from expr import List
 from expr import Tuple
 from expr import Grouping
+from stmt import Inspect
 
 class Parser():
     def __init__(self, grape, tokens):
         self.current = 0
         self.errorHandler = grape.errorHandler
         self.tokens = tokens
+        self.statements = []
 
     def parse(self):
         try:
-            return self.expression()
+            while not self.isAtEnd():
+                self.statements.append(self.statement())
+
+                return self.statements
         except ParseError:
-            return None
+            return
+
+    def statement(self):
+        if self.match([TokenType.INSPECT]):
+            expr = self.expression()
+            self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
+            return Inspect(expr)
+        else:
+            self.syntaxError(self.peek(), "Expected a valid statement.")
 
     def expression(self):
         return self.equality()

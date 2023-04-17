@@ -1,4 +1,5 @@
 import sys
+from utils import *
 from runtime import Repl
 from runtime import ErrorHandler
 from compiler import Scanner
@@ -24,8 +25,7 @@ class Grape:
         scanner = Scanner(self, source)
         tokens = scanner.scanTokens()
 
-        # for token in tokens:
-        #     print(token)
+        # debugPrintTokens(tokens)
 
         parser = Parser(self, tokens)
         expression = parser.parse()
@@ -33,11 +33,7 @@ class Grape:
         if self.errorHandler.hadError: return
         
         interpreter = Interpreter(self, expression)
-        output = interpreter.interpret()
-
-        if self.errorHandler.hadError: return
-
-        print(output)
+        interpreter.interpret()
 
 if __name__ == "__main__":
     grape = Grape()

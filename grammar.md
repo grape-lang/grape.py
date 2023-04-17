@@ -3,7 +3,12 @@
 This is the grammar for parsing expressions in the Grape Programming Language.
 
 ```grammar
-expression  -> containment ;
+program     -> statement* EOF ;
+statement   -> printStmt ;
+
+printStmt   -> "inspect" expression NEWLINE ;
+
+expression  -> equality ;
 equality    -> comparison ( ( "==" | "!=" ) comparison )* ;
 comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term        -> factor ( ( "+" | "-" ) factor )* ;

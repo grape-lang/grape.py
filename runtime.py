@@ -2,10 +2,10 @@ import term
 
 class Repl:
     currentLine = 1
-    prompt = " > "
+    prompt = "=> "
 
     def input(self):
-        line = input(str(self.currentLine) + self.prompt) 
+        line = input(str(self.currentLine) + self.prompt) + "\n"
         if line != "":
             self.currentLine += 1
             return line

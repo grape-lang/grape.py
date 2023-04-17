@@ -36,6 +36,7 @@ class TokenType(Enum):
     NOR = "nor"
     IN = "in"
     FN = "fn"
+    INSPECT = "inspect"
     NAMESPACE = "namespace"
     IF = "if"
     ELSEIF = "elseif"

@@ -2,19 +2,23 @@ from utils import *
 from scanner import TokenType
 
 class Interpreter():
-    def __init__(self, grape, expression):
+    def __init__(self, grape, statements):
         self.errorHandler = grape.errorHandler
-        self.expression = expression
+        self.statements = statements
 
     def interpret(self):
         try:
-            output = self.expression.evaluate(self)
-            return self.stringifyOutput(output)
+            for statement in self.statements:
+                statement.evaluate(self)
         except TypeCheckError as e:
             self.errorHandler.report("Runtime error", e.token.line, e.token.lexeme, e.message)
 
     def stringifyOutput(self, output):
         return str(output)
+    
+    def evaluateInspectStmt(self, expression):
+        value = expression.evaluate(self)
+        print(self.stringifyOutput(value))
 
     def evaluateBinary(self, operator, left, right):
         global maxDecimals
@@ -70,7 +74,7 @@ class Interpreter():
 
         match operator.token_type:
             case TokenType.MINUS: 
-                self.checkNumber(self.operator, right)
+                self.checkNumber(operator, right)
                 return -right
             case TokenType.NOT:
                 return not self.isTruthy(right)
