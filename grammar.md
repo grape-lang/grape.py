@@ -8,8 +8,9 @@ program     -> statement* EOF ;
 declaration -> variableDecl | statement;
 statement   -> printStmt ;
 
-variableDecl-> IDENTIFIER ( "=" expression )? NEWLINE ;
+variableDecl-> IDENTIFIER "=" expression NEWLINE ;
 printStmt   -> "inspect" expression NEWLINE ;
+exitStmt    -> "exit" ( NUMBER | _ ) NEWLINE ;
 
 expression  -> equality ;
 equality    -> comparison ( ( "==" | "!=" ) comparison )* ;

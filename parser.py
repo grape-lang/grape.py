@@ -23,7 +23,7 @@ class Parser():
         
     def declaration(self) -> Stmt:
         try:
-            if self.match([TokenType.IDENTIFIER]) and self.match([TokenType.EQUAL]): 
+            if self.match(TokenType.IDENTIFIER) and self.match(TokenType.EQUAL): 
                 return self.variableDecl()
 
             return self.statement()
@@ -39,12 +39,26 @@ class Parser():
         return decl.Variable(name, initializer)
 
     def statement(self) -> Stmt:
-        if self.match([TokenType.INSPECT]):
+        if self.match(TokenType.INSPECT):
             expression = self.expression()
+
             self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
             return stmt.Inspect(expression)
+        
+        elif self.match(TokenType.EXIT):
+            if self.check(TokenType.NUMBER):
+                code = self.expression()
+
+                self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
+                return stmt.Exit(code)
+            else:
+                self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
+                return stmt.Exit()
+        
         else:
-            self.syntaxError(self.peek(), "Expected a valid statement.")
+            # If it's an empty line, just continue on the next one, otherwise (invalid statement), throw a syntax error.
+            if not self.match(TokenType.NEWLINE): 
+                self.syntaxError(self.peek(), "Expected a valid statement.")
 
     def expression(self) -> Expr:
         return self.equality()
@@ -52,7 +66,7 @@ class Parser():
     def equality(self) -> Expr:
         expression = self.comparison()
 
-        while (self.match([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])):
+        while (self.match_multiple([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])):
             operator = self.previous()
             right = self.comparison()
 
@@ -63,7 +77,7 @@ class Parser():
     def comparison(self)-> Expr:
         expression = self.term()
 
-        while (self.match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])):
+        while (self.match_multiple([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])):
             operator = self.previous()
             right = self.term()
 
@@ -74,7 +88,7 @@ class Parser():
     def term(self)-> Expr:
         expression = self.factor()
 
-        while (self.match([TokenType.MINUS, TokenType.PLUS])):
+        while (self.match_multiple([TokenType.MINUS, TokenType.PLUS])):
             operator = self.previous()
             right = self.factor()
 
@@ -85,7 +99,7 @@ class Parser():
     def factor(self) -> Expr:
         expression = self.unary()
 
-        while (self.match([TokenType.SLASH, TokenType.STAR])):
+        while (self.match_multiple([TokenType.SLASH, TokenType.STAR])):
             operator = self.previous()
             right = self.unary()
 
@@ -94,7 +108,7 @@ class Parser():
         return expression
     
     def unary(self) -> Expr:
-        if self.match([TokenType.NOT, TokenType.MINUS]):
+        if self.match_multiple([TokenType.NOT, TokenType.MINUS]):
             operator = self.previous()
             right = self.unary()
 
@@ -103,50 +117,55 @@ class Parser():
         return self.primary()
     
     def primary(self) -> Expr:
-        if self.match([TokenType.FALSE]): return expr.Literal(False)
-        if self.match([TokenType.TRUE]): return expr.Literal(True)
-        if self.match([TokenType.IDENTIFIER]): return expr.Variable(self.previous())
+        if self.match(TokenType.FALSE): return expr.Literal(False)
+        if self.match(TokenType.TRUE): return expr.Literal(True)
+        if self.match(TokenType.IDENTIFIER): return expr.Variable(self.previous())
 
-        if self.match([TokenType.NUMBER, TokenType.STRING, TokenType.ATOM]):
+        if self.match_multiple([TokenType.NUMBER, TokenType.STRING, TokenType.ATOM]):
             return expr.Literal(self.previous().literal)
         
-        if self.match([TokenType.LEFT_BRACKET]): 
+        if self.match(TokenType.LEFT_BRACKET): 
             expression = self.expression()
             items = [expression]
 
-            while self.match([TokenType.COMMA]):
+            while self.match(TokenType.COMMA):
                 expression = self.expression()
                 items.append(expression)
 
             self.expect(TokenType.RIGHT_BRACKET, "Missing \"]\" to close list.")
             return expr.List(items)
         
-        if self.match([TokenType.LEFT_BRACE]): 
+        if self.match(TokenType.LEFT_BRACE): 
             expression = self.expression()
             items = [expression]
 
-            while self.match([TokenType.COMMA]):
+            while self.match(TokenType.COMMA):
                 expression = self.expression()
                 items.append(expression)
 
             self.expect(TokenType.RIGHT_BRACE, "Missing \"}\" to close tuple.")
             return expr.Tuple(items)
         
-        if self.match([TokenType.LEFT_PAREN]): 
+        if self.match(TokenType.LEFT_PAREN): 
             expression = self.expression()
             self.expect(TokenType.RIGHT_PAREN, "Missing \")\" after expression.")
             return expr.Grouping(expression)
         
         self.syntaxError(self.peek(), "Expected expression.")
 
-    def match(self, token_types: list[TokenType]) -> bool:
+    def match_multiple(self, token_types: list[TokenType]) -> bool:
         for token_type in token_types:
-            if self.check(token_type):
-                self.advance()
-                return True
+            if self.match(token_type) == True: return True
             
         return False
     
+    def match(self, token_type: TokenType) -> bool:
+        if self.check(token_type):
+            self.advance()
+            return True
+        else:
+            return False
+
     def check(self, token_type: TokenType) -> bool:
         if self.isAtEnd(): return False
         return self.peek().token_type == token_type

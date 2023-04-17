@@ -1,4 +1,4 @@
-from env import Env
+from env import *
 
 from decimal import *
 from syntax.tokens import *
@@ -22,7 +22,10 @@ class Interpreter():
                 self.evaluateStatement(statement)
 
         except TypeCheckError as e:
-            self.errorHandler.report("Runtime error", e.token.line, e.token.lexeme, e.message)
+            self.errorHandler.report("Runtime error", e.token.line, quote(e.token.lexeme), e.message)
+
+        except UndefinedError as e:
+            self.errorHandler.report("Runtime error", e.name.line, quote(e.name.lexeme), e.message)
 
     def stringifyOutput(self, output: str) -> str:
         return str(output)
@@ -31,12 +34,21 @@ class Interpreter():
         match statement:
             case stmt.Inspect(): 
                 return self.evaluateInspectStmt(statement.expression)
+            case stmt.Exit():
+                return self.evaluateExitStmt(statement.code)
             case decl.Variable():
                 return self.evaluateVariableDecl(statement.name, statement.initializer)
 
     def evaluateInspectStmt(self, expression: Expr):
         value = self.evaluateExpression(expression)
         print(self.stringifyOutput(value))
+
+    def evaluateExitStmt(self, code):
+        if code:
+            code = self.evaluateExpression(code)
+            exit(int(code))
+        else:
+            exit()
 
     def evaluateVariableDecl(self, name: Token, initializer: Expr):
         value = self.evaluateExpression(initializer)
@@ -157,3 +169,6 @@ class TypeCheckError(Exception):
     def __init__(self, token: Token, message: str):
         self.token = token
         self.message = message
+
+def quote(a: str) -> str:
+    return "\"" + a + "\""
