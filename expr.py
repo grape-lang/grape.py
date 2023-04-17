@@ -62,6 +62,9 @@ class Unary(Expr):
     def evaluate(self, interpreter):
         return interpreter.evaluateUnary(self.operator, self.right)
         
+class Variable(Expr):
+    def __init__(self, name):
+        self.name = name
 
 def parenthesize(input):
     return "( " + input + " )"

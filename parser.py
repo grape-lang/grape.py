@@ -1,12 +1,7 @@
 # type: ignore
 from scanner import TokenType
-from expr import Binary
-from expr import Unary
-from expr import Literal
-from expr import List
-from expr import Tuple
-from expr import Grouping
-from stmt import Inspect
+import expr
+import decl
 
 class Parser():
     def __init__(self, grape, tokens):
@@ -16,19 +11,31 @@ class Parser():
         self.statements = []
 
     def parse(self):
+        while not self.isAtEnd():
+            self.statements.append(self.declaration())
+            return self.statements
+        
+    def declaration(self):
         try:
-            while not self.isAtEnd():
-                self.statements.append(self.statement())
-
-                return self.statements
+            if self.match([TokenType.IDENTIFIER]): return self.variableDecl()
+        
         except ParseError:
-            return
+            self.synchronize()
+            return None
+        
+    def variableDecl(self):
+        name = self.previous()
+        initializer = None
+        if self.match([TokenType.EQUAL]): initializer = self.expression()
+
+        self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
+        return decl.Variable(name, initializer)
 
     def statement(self):
         if self.match([TokenType.INSPECT]):
-            expr = self.expression()
+            expression = self.expression()
             self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-            return Inspect(expr)
+            return expr.Inspect(expression)
         else:
             self.syntaxError(self.peek(), "Expected a valid statement.")
 
@@ -36,48 +43,48 @@ class Parser():
         return self.equality()
 
     def equality(self):
-        expr = self.comparison()
+        expression = self.comparison()
 
         while (self.match([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])):
             operator = self.previous()
             right = self.comparison()
 
-            expr = Binary(expr, operator, right)
+            expression = expr.Binary(expression, operator, right)
 
-        return expr
+        return expression
     
     def comparison(self):
-        expr = self.term()
+        expression = self.term()
 
         while (self.match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])):
             operator = self.previous()
             right = self.term()
 
-            expr = Binary(expr, operator, right)
+            expression = expr.Binary(expression, operator, right)
 
-        return expr
+        return expression
     
     def term(self):
-        expr = self.factor()
+        expression = self.factor()
 
         while (self.match([TokenType.MINUS, TokenType.PLUS])):
             operator = self.previous()
             right = self.factor()
 
-            expr = Binary(expr, operator, right)
+            expression = expr.Binary(expression, operator, right)
 
-        return expr
+        return expression
     
     def factor(self):
-        expr = self.unary()
+        expression = self.unary()
 
         while (self.match([TokenType.SLASH, TokenType.STAR])):
             operator = self.previous()
             right = self.unary()
 
-            expr = Binary(expr, operator, right)
+            expression = expr.Binary(expression, operator, right)
 
-        return expr
+        return expression
     
     def unary(self):
         if self.match([TokenType.NOT, TokenType.MINUS]):
@@ -89,38 +96,39 @@ class Parser():
         return self.primary()
     
     def primary(self):
-        if self.match([TokenType.FALSE]): return Literal(False)
-        if self.match([TokenType.TRUE]): return Literal(True)
+        if self.match([TokenType.FALSE]): return expr.Literal(False)
+        if self.match([TokenType.TRUE]): return expr.Literal(True)
+        if self.match([TokenType.IDENTIFIER]): return VariableDcl(self.previous())
 
         if self.match([TokenType.NUMBER, TokenType.STRING, TokenType.ATOM]):
-            return Literal(self.previous().literal)
+            return expr.Literal(self.previous().literal)
         
         if self.match([TokenType.LEFT_BRACKET]): 
-            expr = self.expression()
-            items = [expr]
+            expression = self.expression()
+            items = [expression]
 
             while self.match([TokenType.COMMA]):
-                expr = self.expression()
-                items.append(expr)
+                expression = self.expression()
+                items.append(expression)
 
             self.expect(TokenType.RIGHT_BRACKET, "Missing \"]\" to close list.")
-            return List(items)
+            return expr.List(items)
         
         if self.match([TokenType.LEFT_BRACE]): 
-            expr = self.expression()
-            items = [expr]
+            expression = self.expression()
+            items = [expression]
 
             while self.match([TokenType.COMMA]):
-                expr = self.expression()
-                items.append(expr)
+                expression = self.expression()
+                items.append(expression)
 
             self.expect(TokenType.RIGHT_BRACE, "Missing \"}\" to close tuple.")
-            return Tuple(items)
+            return expr.Tuple(items)
         
         if self.match([TokenType.LEFT_PAREN]): 
-            expr = self.expression()
+            expression = self.expression()
             self.expect(TokenType.RIGHT_PAREN, "Missing \")\" after expression.")
-            return Grouping(expr)
+            return expr.Grouping(expression)
         
         self.syntaxError(self.peek(), "Expected expression.")
 
