@@ -1,5 +1,5 @@
 from decimal import *
-from tokens import *
+from syntax.tokens import *
 
 class Scanner:
     def __init__(self, grape, source: str): 

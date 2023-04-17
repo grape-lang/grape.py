@@ -1,6 +1,6 @@
 from term import colors
-from tokens import Token
-from stmt import Stmt
+from syntax.tokens import Token
+from syntax.stmt import Stmt
 
 def printTokens(tokens: list[Token]) -> None:
     print(formatSuccess("Scanned tokens:"))

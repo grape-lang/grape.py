@@ -1,5 +1,5 @@
-from stmt import *
-from tokens import Token
+from syntax.stmt import *
+from syntax.tokens import Token
 
 class Decl(Stmt):
     pass

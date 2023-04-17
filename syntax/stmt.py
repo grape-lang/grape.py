@@ -1,4 +1,4 @@
-from expr import Expr
+from syntax.expr import Expr
 
 class Stmt():
     pass

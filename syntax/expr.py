@@ -1,4 +1,4 @@
-from tokens import Token
+from syntax.tokens import Token
 
 class Expr():
     pass

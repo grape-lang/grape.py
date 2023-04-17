@@ -40,10 +40,11 @@ class Grape:
         interpreter = Interpreter(self, statements)
         interpreter.interpret()
 
-        if self.errorHandler.hadError:
-            debug.printError()
-        else:
-            debug.printDone()
+        if self.debug:
+            if self.errorHandler.hadError:
+                debug.printError()
+            else:
+                debug.printDone()
 
 if __name__ == "__main__":
     grape = Grape()

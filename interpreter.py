@@ -1,11 +1,11 @@
 from decimal import *
-from tokens import *
+from syntax.tokens import *
 
-from stmt import Stmt
-from expr import Expr
+from syntax.stmt import Stmt
+from syntax.expr import Expr
 
-import stmt
-import expr
+import syntax.stmt as stmt
+import syntax.expr as expr
 
 class Interpreter():
     def __init__(self, grape, statements: list[Stmt]):

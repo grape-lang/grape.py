@@ -1,12 +1,11 @@
 # type: ignore
-from tokens import *
+from syntax.tokens import *
 
-from stmt import Stmt
-from expr import Expr
+from syntax.stmt import Stmt
+from syntax.expr import Expr
 
-import stmt
-import decl
-import expr
+import syntax.stmt as stmt
+import syntax.expr as expr
 
 class Parser():
     def __init__(self, grape, tokens: list[Token]):
@@ -35,7 +34,7 @@ class Parser():
         if self.match([TokenType.EQUAL]): initializer = self.expression()
 
         self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-        return decl.Variable(name, initializer)
+        return stmt.decl.Variable(name, initializer)
 
     def statement(self) -> Stmt:
         if self.match([TokenType.INSPECT]):
