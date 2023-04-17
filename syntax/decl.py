@@ -10,4 +10,4 @@ class Variable(Decl):
         self.initializer = initializer
 
     def __str__(self) -> str:
-        return self.name.lexeme
+        return " ( var " + self.name.lexeme + " " + str(self.initializer) + " )"

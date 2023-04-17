@@ -5,6 +5,7 @@ from syntax.stmt import Stmt
 from syntax.expr import Expr
 
 import syntax.stmt as stmt
+import syntax.decl as decl
 import syntax.expr as expr
 
 class Parser():
@@ -17,11 +18,13 @@ class Parser():
     def parse(self) -> list[Stmt]:
         while not self.isAtEnd():
             self.statements.append(self.declaration())
-            return self.statements
+            
+        return self.statements
         
     def declaration(self) -> Stmt:
         try:
-            if self.match([TokenType.IDENTIFIER]): return self.variableDecl()
+            if self.match([TokenType.IDENTIFIER]) and self.match([TokenType.EQUAL]): 
+                return self.variableDecl()
 
             return self.statement()
         
@@ -29,12 +32,11 @@ class Parser():
             self.synchronize()
         
     def variableDecl(self) -> Stmt:
-        name = self.previous()
-        initializer = None
-        if self.match([TokenType.EQUAL]): initializer = self.expression()
+        name = self.doublePrevious()
+        initializer = self.expression()
 
         self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-        return stmt.decl.Variable(name, initializer)
+        return decl.Variable(name, initializer)
 
     def statement(self) -> Stmt:
         if self.match([TokenType.INSPECT]):
@@ -103,7 +105,7 @@ class Parser():
     def primary(self) -> Expr:
         if self.match([TokenType.FALSE]): return expr.Literal(False)
         if self.match([TokenType.TRUE]): return expr.Literal(True)
-        if self.match([TokenType.IDENTIFIER]): return VariableDcl(self.previous())
+        if self.match([TokenType.IDENTIFIER]): return expr.Variable(self.previous())
 
         if self.match([TokenType.NUMBER, TokenType.STRING, TokenType.ATOM]):
             return expr.Literal(self.previous().literal)
@@ -161,6 +163,9 @@ class Parser():
 
     def previous(self) -> Token:
         return self.getTokenByIndex(self.current - 1)
+    
+    def doublePrevious(self) -> Token:
+        return self.getTokenByIndex(self.current - 2)
     
     def getTokenByIndex(self, index: int) -> Token:
         return self.tokens[index]

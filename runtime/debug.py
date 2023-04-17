@@ -1,4 +1,4 @@
-from term import colors
+import runtime.term as term
 from syntax.tokens import Token
 from syntax.stmt import Stmt
 
@@ -10,7 +10,7 @@ def printTokens(tokens: list[Token]) -> None:
     print("")
 
 def printStatements(statements: list[Stmt]) -> None:
-    print(formatSuccess("Parsed statements:"))
+    print(formatSuccess("Parsed statements (" + str(len(statements)) +"):"))
     for statement in statements:
         print(statement)
 
@@ -27,10 +27,10 @@ def printDone():
     print(formatSuccess("[DONE]"))
 
 def formatSuccess(message: str) -> str:
-    return formatHeading(colors.OK + "[OK] " + message)
+    return formatHeading(term.colors.OK + "[OK] " + message)
 
 def formatError(message: str) -> str:
-    return formatHeading(colors.FAIL + "[ERROR] " + message)
+    return formatHeading(term.colors.FAIL + "[ERROR] " + message)
 
 def formatHeading(heading: str) -> str:
-    return colors.BOLD + heading + colors.NORMAL
+    return term.colors.BOLD + heading + term.colors.NORMAL

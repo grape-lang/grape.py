@@ -1,3 +1,5 @@
+from env import Env
+
 from decimal import *
 from syntax.tokens import *
 
@@ -5,10 +7,12 @@ from syntax.stmt import Stmt
 from syntax.expr import Expr
 
 import syntax.stmt as stmt
+import syntax.decl as decl
 import syntax.expr as expr
 
 class Interpreter():
     def __init__(self, grape, statements: list[Stmt]):
+        self.env = Env()
         self.errorHandler = grape.errorHandler
         self.statements = statements
 
@@ -27,13 +31,22 @@ class Interpreter():
         match statement:
             case stmt.Inspect(): 
                 return self.evaluateInspectStmt(statement.expression)
+            case decl.Variable():
+                return self.evaluateVariableDecl(statement.name, statement.initializer)
 
     def evaluateInspectStmt(self, expression: Expr):
         value = self.evaluateExpression(expression)
         print(self.stringifyOutput(value))
 
+    def evaluateVariableDecl(self, name: Token, initializer: Expr):
+        value = self.evaluateExpression(initializer)
+        self.env.define(name, value)
+
     def evaluateExpression(self, expression: Expr):
         match expression:
+            case expr.Variable():
+                return self.evaluateVariableExpr(expression.name)
+            
             case expr.Binary(): 
                 return self.evaluateBinary(expression.operator, expression.left, expression.right)
 
@@ -51,6 +64,9 @@ class Interpreter():
 
             case expr.Unary():
                 return self.evaluateUnary(expression.operator, expression.right)
+
+    def evaluateVariableExpr(self, name: Token):
+        return self.env.get(name)
 
     def evaluateBinary(self, operator: Token, left: Expr, right: Expr):
         global maxDecimals

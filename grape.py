@@ -1,7 +1,7 @@
 import sys
-import debug
-from runtime import Repl
-from runtime import ErrorHandler
+import runtime.debug as debug
+from runtime.repl import Repl
+from runtime.error_handler import ErrorHandler
 from compiler import Scanner
 from compiler import Parser
 from compiler import Interpreter
