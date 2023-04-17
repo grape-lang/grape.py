@@ -1,30 +1,62 @@
-from utils import *
-from scanner import TokenType
+from decimal import *
+from tokens import *
+
+from stmt import Stmt
+from expr import Expr
+
+import stmt
+import expr
 
 class Interpreter():
-    def __init__(self, grape, statements):
+    def __init__(self, grape, statements: list[Stmt]):
         self.errorHandler = grape.errorHandler
         self.statements = statements
 
-    def interpret(self):
+    def interpret(self) -> None:
         try:
             for statement in self.statements:
-                statement.evaluate(self)
+                self.evaluateStatement(statement)
+
         except TypeCheckError as e:
             self.errorHandler.report("Runtime error", e.token.line, e.token.lexeme, e.message)
 
-    def stringifyOutput(self, output):
+    def stringifyOutput(self, output: str) -> str:
         return str(output)
     
-    def evaluateInspectStmt(self, expression):
-        value = expression.evaluate(self)
+    def evaluateStatement(self, statement: Stmt):
+        match statement:
+            case stmt.Inspect(): 
+                return self.evaluateInspectStmt(statement.expression)
+
+    def evaluateInspectStmt(self, expression: Expr):
+        value = self.evaluateExpression(expression)
         print(self.stringifyOutput(value))
 
-    def evaluateBinary(self, operator, left, right):
+    def evaluateExpression(self, expression: Expr):
+        match expression:
+            case expr.Binary(): 
+                return self.evaluateBinary(expression.operator, expression.left, expression.right)
+
+            case expr.Grouping():
+                return self.evaluateGrouping(expression.expression)
+
+            case expr.Literal():
+                return self.evaluateLiteral(expression.value)
+            
+            case expr.List():
+                return self.evaluateCollection(expression.items)
+
+            case expr.Tuple():
+                return self.evaluateCollection(expression.items)
+
+            case expr.Unary():
+                return self.evaluateUnary(expression.operator, expression.right)
+
+    def evaluateBinary(self, operator: Token, left: Expr, right: Expr):
         global maxDecimals
 
-        left = left.evaluate(self)
-        right = right.evaluate(self)
+        left = self.evaluateExpression(left)
+        right = self.evaluateExpression(right)
 
         match operator.token_type:
             case TokenType.MINUS: 
@@ -60,17 +92,17 @@ class Interpreter():
             case TokenType.BANG_EQUAL:
                 return not self.isEqual(left, right)
 
-    def evaluateGrouping(self, expr):
-        return expr.evaluate(self)
+    def evaluateGrouping(self, expr: Expr):
+        return self.evaluateExpression(expr)
     
-    def evaluateLiteral(self, value):
+    def evaluateLiteral(self, value: any):
         return value
     
-    def evaluateCollection(self, items):
-        return [item.evaluate(self) for item in items]
+    def evaluateCollection(self, items: list[Expr]):
+        return [self.evaluateExpression(item) for item in items]
 
-    def evaluateUnary(self, operator, right):
-        right = right.evaluate(self)
+    def evaluateUnary(self, operator: Token, right: Expr):
+        right = self.evaluateExpression(right)
 
         match operator.token_type:
             case TokenType.MINUS: 
@@ -79,33 +111,33 @@ class Interpreter():
             case TokenType.NOT:
                 return not self.isTruthy(right)
 
-    def isTruthy(self, input):
+    def isTruthy(self, input: any) -> bool:
         input != False
 
-    def isEqual(self, a, b):
+    def isEqual(self, a: any, b: any) -> bool:
         return a == b
 
-    def checkNumber(self, operator, a):
+    def checkNumber(self, operator: Token, a: any) -> None:
         if not self.isNumber(a):
             raise TypeCheckError(operator, "Operand must be a number.")
 
-    def checkBothNumbers(self, operator, a, b):
+    def checkBothNumbers(self, operator: Token, a: any, b: any) -> None:
         if not self.areBothNumbers(a, b):
             raise TypeCheckError(operator, "Operands must both be a number.")
 
-    def areBothNumbers(self, a, b):
+    def areBothNumbers(self, a: any, b: any) -> bool:
         return self.isNumber(a) and self.isNumber(b)
 
-    def isNumber(self, input):
+    def isNumber(self, input: any) -> bool:
         return isinstance(input, Decimal)
 
-    def areBothText(self, a, b):
+    def areBothText(self, a: any, b: any) -> bool:
         return self.isText(a) and self.isText(b)
 
-    def isText(self, input):
+    def isText(self, input: any) -> bool:
         return isinstance(input, str)
 
 class TypeCheckError(Exception):
-    def __init__(self, token, message):
+    def __init__(self, token: Token, message: str):
         self.token = token
         self.message = message

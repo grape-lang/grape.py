@@ -1,9 +1,11 @@
+from expr import Expr
+
 class Stmt():
     pass
 
 class Inspect(Stmt):
-    def __init__(self, expression):
+    def __init__(self, expression: Expr):
         self.expression = expression
 
-    def evaluate(self, interpreter):
-        interpreter.evaluateInspectStmt(self.expression)
+    def __str__(self) -> str:
+        return " ( inspect " + str(self.expression) + " ) "

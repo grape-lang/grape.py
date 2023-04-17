@@ -1,68 +1,8 @@
-from utils import *
-from enum import Enum
-
-class TokenType(Enum):
-    LEFT_PAREN = "("
-    RIGHT_PAREN = ")"
-    LEFT_BRACE = "{"
-    RIGHT_BRACE = "}"
-    LEFT_BRACKET = "["
-    RIGHT_BRACKET = "]"
-    COMMA = ","
-    DOT = "."
-    MINUS = "-"
-    PLUS = "+"
-    STAR = "*"
-    SLASH = "/"
-    PIPE = "|"
-    PIPE_ARROW = "|>"
-
-    EQUAL = "="
-    BANG_EQUAL = "!="
-    EQUAL_EQUAL = "=="
-    GREATER = ">"
-    GREATER_EQUAL = ">="
-    LESS = "<"
-    LESS_EQUAL = "<="
-
-    IDENTIFIER = 1
-    STRING = 2 
-    NUMBER = 3
-    ATOM = 4
-
-    AND = "and"
-    NOT = "not"
-    OR = "or"
-    NOR = "nor"
-    IN = "in"
-    FN = "fn"
-    INSPECT = "inspect"
-    NAMESPACE = "namespace"
-    IF = "if"
-    ELSEIF = "elseif"
-    ELSE= "else"
-    USE = "use"
-    DO = "do"
-    END = "end"
-    TRUE = "true"
-    FALSE = "false"
-
-    NEWLINE = 5
-    EOF = 6
-
-class Token:
-    def __init__(self, token_type, lexeme, literal, line, col):
-        self.token_type = token_type
-        self.lexeme = lexeme
-        self.literal = literal
-        self.line = line
-        self.col = col
-
-    def __str__(self):
-        return str(self.token_type) + " " + str(self.lexeme) + " " + str(self.literal)
+from decimal import *
+from tokens import *
 
 class Scanner:
-    def __init__(self, grape, source): 
+    def __init__(self, grape, source: str): 
         self.tokens = []
         self.start = 0
         self.current = 0
@@ -70,7 +10,7 @@ class Scanner:
         self.errorHandler = grape.errorHandler
         self.source = source
 
-    def scanTokens(self):
+    def scanTokens(self) -> list[Token]:
         while not self.isAtEnd():
             self.start = self.current
             self.scanToken()
@@ -178,10 +118,10 @@ class Scanner:
         
         self.addToken(TokenType.NUMBER, round(Decimal(self.currentString()), 3))
 
-    def isAtomChar(self, c):
+    def isAtomChar(self, c: str) -> bool:
         return c in charRange("A", "Z") or c == "@"
 
-    def isIdentifierChar(self, c):
+    def isIdentifierChar(self, c: str) -> bool:
         return self.isAlpha(c)
 
     def handleAtom(self):
@@ -200,51 +140,54 @@ class Scanner:
 
         self.addToken(TokenType.IDENTIFIER)
 
-    def isAlpha(self, c):
+    def isAlpha(self, c: str) -> bool:
         return c in charRange("a", "z") or c == "_"
 
-    def isAlphaNumeric(self, c):
+    def isAlphaNumeric(self, c: str) -> bool:
         return self.isAlpha(c) or c.isdigit()
 
-    def syntaxError(self, unexpectedString = "", message = ""):
+    def syntaxError(self, unexpectedString: str = "", message: str = "") -> None:
         if unexpectedString != "":
             message = "Unexpected \"" + unexpectedString + "\". " + message
 
         self.errorHandler.report("Syntax error", self.line, self.current, message)
 
-    def advance(self):
+    def advance(self) -> str:
         self.current += 1
         return self.currentString()
 
-    def match(self, expected):
+    def match(self, expected: str) -> bool:
         if self.isAtEnd(): return False
         if self.nextChar() != expected: return False
 
         self.current += 1
         return True
 
-    def peek(self):
+    def peek(self) -> str:
         if self.isAtEnd(): return '\0';
         return self.nextChar()    
     
-    def doublePeek(self):
+    def doublePeek(self) -> str:
         afterNextChar = self.current + 1
 
         if afterNextChar >= len(self.source): return "\0"
         return self.charAt(afterNextChar)
 
-    def currentString(self):
+    def currentString(self) -> str:
         return self.source[self.start:self.current]
     
-    def nextChar(self):
+    def nextChar(self) -> str:
         return self.charAt(self.current)
     
-    def charAt(self, index):
+    def charAt(self, index: int) -> str:
         return self.source[index:index + 1]
     
-    def isValidTokenType(self, string):
+    def isValidTokenType(self, string: str) -> bool:
         return string in [token_type.value for token_type in TokenType]
 
-    def addToken(self, token_type, literal = None):
+    def addToken(self, token_type: TokenType, literal: any = None) -> None:
         string = self.currentString()
         self.tokens.append(Token(token_type, string, literal, self.line, self.start))
+
+def charRange(start: str, stop: str) -> range:
+    return (chr(n) for n in range(ord(start), ord(stop) + 1))

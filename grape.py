@@ -1,5 +1,5 @@
 import sys
-from utils import *
+import debug
 from runtime import Repl
 from runtime import ErrorHandler
 from compiler import Scanner
@@ -8,9 +8,10 @@ from compiler import Interpreter
 
 class Grape:
     def __init__(self):
+        self.debug = True
         self.errorHandler = ErrorHandler()
 
-    def runFile(self, filename):
+    def runFile(self, filename: str):
         source_code = open(filename, "r").read()
         self.run(source_code)
 
@@ -21,19 +22,28 @@ class Grape:
             self.run(line)
             self.errorHandler.hadError = False
 
-    def run(self, source): 
+    def run(self, source: str): 
         scanner = Scanner(self, source)
         tokens = scanner.scanTokens()
 
-        # debugPrintTokens(tokens)
+        if self.debug: debug.printTokens(tokens)
 
         parser = Parser(self, tokens)
-        expression = parser.parse()
+        statements = parser.parse()
+
+        if self.debug: 
+            debug.printStatements(statements)
+            debug.printRunning()
 
         if self.errorHandler.hadError: return
         
-        interpreter = Interpreter(self, expression)
+        interpreter = Interpreter(self, statements)
         interpreter.interpret()
+
+        if self.errorHandler.hadError:
+            debug.printError()
+        else:
+            debug.printDone()
 
 if __name__ == "__main__":
     grape = Grape()
@@ -52,3 +62,4 @@ if __name__ == "__main__":
 
     else:
         grape.startREPL()
+

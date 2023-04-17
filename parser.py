@@ -1,29 +1,35 @@
 # type: ignore
-from scanner import TokenType
-import expr
+from tokens import *
+
+from stmt import Stmt
+from expr import Expr
+
+import stmt
 import decl
+import expr
 
 class Parser():
-    def __init__(self, grape, tokens):
+    def __init__(self, grape, tokens: list[Token]):
         self.current = 0
         self.errorHandler = grape.errorHandler
         self.tokens = tokens
         self.statements = []
 
-    def parse(self):
+    def parse(self) -> list[Stmt]:
         while not self.isAtEnd():
             self.statements.append(self.declaration())
             return self.statements
         
-    def declaration(self):
+    def declaration(self) -> Stmt:
         try:
             if self.match([TokenType.IDENTIFIER]): return self.variableDecl()
+
+            return self.statement()
         
         except ParseError:
             self.synchronize()
-            return None
         
-    def variableDecl(self):
+    def variableDecl(self) -> Stmt:
         name = self.previous()
         initializer = None
         if self.match([TokenType.EQUAL]): initializer = self.expression()
@@ -31,18 +37,18 @@ class Parser():
         self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
         return decl.Variable(name, initializer)
 
-    def statement(self):
+    def statement(self) -> Stmt:
         if self.match([TokenType.INSPECT]):
             expression = self.expression()
             self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-            return expr.Inspect(expression)
+            return stmt.Inspect(expression)
         else:
             self.syntaxError(self.peek(), "Expected a valid statement.")
 
-    def expression(self):
+    def expression(self) -> Expr:
         return self.equality()
 
-    def equality(self):
+    def equality(self) -> Expr:
         expression = self.comparison()
 
         while (self.match([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])):
@@ -53,7 +59,7 @@ class Parser():
 
         return expression
     
-    def comparison(self):
+    def comparison(self)-> Expr:
         expression = self.term()
 
         while (self.match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])):
@@ -64,7 +70,7 @@ class Parser():
 
         return expression
     
-    def term(self):
+    def term(self)-> Expr:
         expression = self.factor()
 
         while (self.match([TokenType.MINUS, TokenType.PLUS])):
@@ -75,7 +81,7 @@ class Parser():
 
         return expression
     
-    def factor(self):
+    def factor(self) -> Expr:
         expression = self.unary()
 
         while (self.match([TokenType.SLASH, TokenType.STAR])):
@@ -86,7 +92,7 @@ class Parser():
 
         return expression
     
-    def unary(self):
+    def unary(self) -> Expr:
         if self.match([TokenType.NOT, TokenType.MINUS]):
             operator = self.previous()
             right = self.unary()
@@ -95,7 +101,7 @@ class Parser():
         
         return self.primary()
     
-    def primary(self):
+    def primary(self) -> Expr:
         if self.match([TokenType.FALSE]): return expr.Literal(False)
         if self.match([TokenType.TRUE]): return expr.Literal(True)
         if self.match([TokenType.IDENTIFIER]): return VariableDcl(self.previous())
@@ -132,7 +138,7 @@ class Parser():
         
         self.syntaxError(self.peek(), "Expected expression.")
 
-    def match(self, token_types):
+    def match(self, token_types: list[TokenType]) -> bool:
         for token_type in token_types:
             if self.check(token_type):
                 self.advance()
@@ -140,32 +146,32 @@ class Parser():
             
         return False
     
-    def check(self, token_type):
+    def check(self, token_type: TokenType) -> bool:
         if self.isAtEnd(): return False
         return self.peek().token_type == token_type
     
-    def advance(self):
+    def advance(self) -> Token:
         if not self.isAtEnd(): self.current += 1
         return self.previous()
     
-    def isAtEnd(self):
+    def isAtEnd(self) -> bool:
         return self.peek().token_type == TokenType.EOF
 
-    def peek(self): 
+    def peek(self) -> Token: 
         return self.getTokenByIndex(self.current)
 
-    def previous(self):
+    def previous(self) -> Token:
         return self.getTokenByIndex(self.current - 1)
     
-    def getTokenByIndex(self, index):
+    def getTokenByIndex(self, index: int) -> Token:
         return self.tokens[index]
     
-    def expect(self, token_type, fail_message):
+    def expect(self, token_type: TokenType, fail_message: str) -> Token | None:
         if self.check(token_type): return self.advance()
 
         self.syntaxError(self.peek(), fail_message)
 
-    def syntaxError(self, token, message):
+    def syntaxError(self, token: Token, message: str) -> None:
         if token.token_type == TokenType.EOF:
             error = self.errorHandler.report("Syntax error", token.line, "EOF", message)
         else:
@@ -173,7 +179,7 @@ class Parser():
 
         raise ParseError(error)
 
-    def synchronize(self):
+    def synchronize(self) -> None:
         self.advance()
 
         while not self.isAtEnd():

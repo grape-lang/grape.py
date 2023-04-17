@@ -4,21 +4,23 @@ class Repl:
     currentLine = 1
     prompt = "=> "
 
-    def input(self):
-        line = input(str(self.currentLine) + self.prompt) + "\n"
-        if line != "":
-            self.currentLine += 1
-            return line
-        else:
-            self.input()
+    def input(self) -> str:
+        match self.askForInput():
+            case "": self.input()
+            case line:
+                self.currentLine += 1
+                return line
+
+    def askForInput(self) -> str:
+        return input(str(self.currentLine) + self.prompt) + "\n"
             
 class ErrorHandler:
     hadError = False
 
-    def report(self, kind, line, col, message = ""): 
+    def report(self, kind: str, line: int, location: str, message: str = "") -> str: 
         self.hadError = True
         header = "[line " + str(line) + "]"
-        error = kind + " at " + str(col)
+        error = kind + " at " + str(location)
 
         if message:
             error += ": " + message
@@ -26,8 +28,9 @@ class ErrorHandler:
         print(term.colors.FAIL + header + " " + error + term.colors.NORMAL)
         return error
     
-    def warn(self, line, message): 
+    def warn(self, line: int, message: str) -> str: 
         header = "[line " + str(line) + "]"
         message = message.lower()    
         
         print(term.colors.WARNING + header + " " + message + term.colors.NORMAL)
+        return message
