@@ -1,8 +1,9 @@
 from syntax.tokens import *
 
 class Env:
-    def __init__(self):
+    def __init__(self, enclosing = None):
         self.values = {}
+        self.enclosing = enclosing
 
     def define(self, name: Token, value: any):
         self.values[name.lexeme] = value
@@ -10,6 +11,10 @@ class Env:
     def get(self, name: Token) -> any:
         if name.lexeme in self.values:
             return self.values[name.lexeme]
+        
+        elif self.enclosing: 
+            return self.enclosing.get(name)
+
         else:
             raise UndefinedError(name, "Undefined variable " + name.lexeme + ".")
 

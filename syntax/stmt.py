@@ -4,6 +4,14 @@ from syntax.expr import Expr
 class Stmt():
     pass
 
+class Block(Stmt):
+    def __init__(self, statements: Stmt):
+        self.statements = statements
+
+    def __str__(self) -> str:
+        statements = [str(statement) for statement in self.statements]
+        return " ( block " + " ".join(statements) + " ) "
+
 class Inspect(Stmt):
     def __init__(self, expression: Expr):
         self.expression = expression

@@ -32,12 +32,24 @@ class Interpreter():
     
     def evaluateStatement(self, statement: Stmt):
         match statement:
+            case stmt.Block():
+                return self.evaluateBlock(statement.statements)
             case stmt.Inspect(): 
                 return self.evaluateInspectStmt(statement.expression)
             case stmt.Exit():
                 return self.evaluateExitStmt(statement.code)
             case decl.Variable():
                 return self.evaluateVariableDecl(statement.name, statement.initializer)
+
+    def evaluateBlock(self, statements: list[Stmt]):
+        outerEnv = self.env
+        blockEnv = Env(outerEnv)
+        
+        self.env = blockEnv
+        for statement in statements:
+            self.evaluateStatement(statement)
+
+        self.env = outerEnv
 
     def evaluateInspectStmt(self, expression: Expr):
         value = self.evaluateExpression(expression)

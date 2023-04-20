@@ -54,11 +54,26 @@ class Parser():
             else:
                 self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
                 return stmt.Exit()
+            
+        elif self.match(TokenType.DO):
+            return stmt.Block(self.block())
         
         else:
-            # If it's an empty line, just continue on the next one, otherwise (invalid statement), throw a syntax error.
-            if not self.match(TokenType.NEWLINE): 
-                self.syntaxError(self.peek(), "Expected a valid statement.")
+            # Skip empty lines
+            if not self.match(TokenType.NEWLINE):
+                # It's probably an expression statement.
+                expression = self.expression()
+                self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
+                return expression            
+        
+    def block(self) -> list[Stmt]:
+        statements = []
+
+        while not self.check(TokenType.END) and not self.isAtEnd():
+            statements.append(self.declaration())
+
+        self.expect(TokenType.END, "Expected \"end\" to terminate the block.")
+        return statements
 
     def expression(self) -> Expr:
         return self.equality()
