@@ -58,6 +58,19 @@ class Parser():
         elif self.match(TokenType.DO):
             return stmt.Block(self.block())
         
+        elif self.match(TokenType.IF):
+            self.expect(TokenType.LEFT_PAREN, "Missing opening \"(\" before if-statement condition.")
+            condition = self.expression()
+            self.expect(TokenType.RIGHT_PAREN, "Missing closing \")\" after if-statement condition.")
+            
+            thenBranch = self.statement()
+
+            if(self.match(TokenType.ELSE)):
+                elseBranch = self.statement()
+                return stmt.If(condition, thenBranch, elseBranch)
+            else:
+                return stmt.If(condition, thenBranch)
+        
         else:
             # Skip empty lines
             if not self.match(TokenType.NEWLINE):

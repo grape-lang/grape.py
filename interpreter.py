@@ -32,6 +32,8 @@ class Interpreter():
     
     def evaluateStatement(self, statement: Stmt):
         match statement:
+            case stmt.If():
+                return self.evaluateIf(statement.condition, statement.thenBranch, statement.elseBranch)
             case stmt.Block():
                 return self.evaluateBlock(statement.statements)
             case stmt.Inspect(): 
@@ -40,6 +42,15 @@ class Interpreter():
                 return self.evaluateExitStmt(statement.code)
             case decl.Variable():
                 return self.evaluateVariableDecl(statement.name, statement.initializer)
+
+    def evaluateIf(self, condition, thenBranch, elseBranch):
+        condition = self.evaluateExpression(condition)
+
+        if self.isTruthy(condition):
+            return self.evaluateStatement(thenBranch)
+        else:
+            if elseBranch:
+                return self.evaluateStatement(elseBranch)
 
     def evaluateBlock(self, statements: list[Stmt]):
         outerEnv = self.env
@@ -152,7 +163,7 @@ class Interpreter():
                 return not self.isTruthy(right)
 
     def isTruthy(self, input: any) -> bool:
-        input != False
+        return input != False
 
     def isEqual(self, a: any, b: any) -> bool:
         return a == b

@@ -3,17 +3,17 @@
 This is the grammar for parsing expressions in the Grape Programming Language.
 
 ```grammar
-program     -> statement* EOF ;
+program     -> declaration* EOF ;
 
 declaration -> variableDecl | statement ;
 variableDecl-> IDENTIFIER "=" expression NEWLINE ;
 
-statement   -> inspectStmt | exprStmt | block ;
+statement   -> exprStmt | if | inspect | exit | block ;
 
 exprStmt    -> expression NEWLINE ;
-inspectStmt -> "inspect" expression NEWLINE ;
-exitStmt    -> "exit" ( NUMBER | _ ) NEWLINE ;
-
+if          -> "if" "(" expression ")" statement "else" statement ;
+inspect     -> "inspect" expression NEWLINE ;
+exit        -> "exit" ( NUMBER | _ ) NEWLINE ;
 block       -> "do" (declaration)* "end" ;
 
 expression  -> equality ;
@@ -24,7 +24,8 @@ factor      -> unary ( ( "/" | "*" ) unary )* ;
 unary       -> ( "-" | "not" ) unary | primary ;
 primary     -> literal | grouping ;
 
-literal     -> NUMBER | STRING | ATOM | list | tuple | "true" | "false" | IDENTIFIER ;
+literal     -> NUMBER | STRING | ATOM | list | tuple | bool | IDENTIFIER ;
+bool        -> "true" | "false"
 list        -> "[" expression | ( expression "," )* "]" ;
 tuple       -> "(" expression* ")" ;
 grouping    -> "(" expression ")" ;

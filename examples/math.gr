@@ -1,19 +1,25 @@
 x = 2
 y = x + 1 * 4
-inspect x + y
+//inspect x + y
 
-do
-    inspect x
-    x = 4
-    inspect x
-
-    do
-        inspect x
-        x = x - 1
-        inspect x
-    end
-
-    inspect x
+if(x == 2) do
+    inspect y
+end else do
+    inspect "oops"
 end
 
-inspect x
+//do
+//    inspect x
+//    x = 4
+//    inspect x
+//
+//    do
+//        inspect x
+//        x = x - 1
+//        inspect x
+//    end
+//
+//    inspect x
+//end
+
+//inspect x
