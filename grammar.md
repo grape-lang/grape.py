@@ -8,13 +8,14 @@ program     -> declaration* EOF ;
 declaration -> variableDecl | statement ;
 variableDecl-> IDENTIFIER "=" expression NEWLINE ;
 
-statement   -> exprStmt | if | inspect | exit | block ;
+statement   -> exprStmt | if | inspect | exit | doBlock ;
 
 exprStmt    -> expression NEWLINE ;
-if          -> "if" "(" expression ")" statement "else" statement ;
+if          -> "if" "(" expression ")" (( statement "else" statement ) | doElseBlock) ;
 inspect     -> "inspect" expression NEWLINE ;
 exit        -> "exit" ( NUMBER | _ ) NEWLINE ;
-block       -> "do" (declaration)* "end" ;
+doBlock     -> "do" (declaration)* "end" ;
+doElseBlock -> "do" (declaration)* "else" (declaration)* "end" ;
 
 expression  -> equality ;
 equality    -> comparison ( ( "==" | "!=" ) comparison )* ;

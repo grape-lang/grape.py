@@ -4,7 +4,7 @@ y = x + 1 * 4
 
 if(x == 2) do
     inspect y
-end else do
+else
     inspect "oops"
 end
 

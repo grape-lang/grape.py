@@ -17,7 +17,8 @@ class Parser():
 
     def parse(self) -> list[Stmt]:
         while not self.isAtEnd():
-            self.statements.append(self.declaration())
+            declaration = self.declaration()
+            if declaration: self.statements.append(declaration)
             
         return self.statements
         
@@ -62,14 +63,36 @@ class Parser():
             self.expect(TokenType.LEFT_PAREN, "Missing opening \"(\" before if-statement condition.")
             condition = self.expression()
             self.expect(TokenType.RIGHT_PAREN, "Missing closing \")\" after if-statement condition.")
+
+            thenBranch = None
+            elseBranch = None
             
-            thenBranch = self.statement()
+            if(self.match(TokenType.DO)):
+                doStatements = []
+                elseStatements = []
+
+                while not ( self.check(TokenType.END) or self.check(TokenType.ELSE) ) or self.isAtEnd():
+                    declaration = self.declaration()
+                    if declaration: doStatements.append(declaration)
+                    
+                thenBranch = stmt.Block(doStatements)
+                
+                if self.match(TokenType.ELSE):
+                    while not self.check(TokenType.END) and not self.isAtEnd():
+                        declaration = self.declaration()
+                        if declaration: elseStatements.append(declaration)
+
+                    elseBranch = stmt.Block(elseStatements)
+
+                self.expect(TokenType.END, "Expected \"end\" to terminate do-else-block.")
+                    
+            else:
+                thenBranch = self.statement()
 
             if(self.match(TokenType.ELSE)):
                 elseBranch = self.statement()
-                return stmt.If(condition, thenBranch, elseBranch)
-            else:
-                return stmt.If(condition, thenBranch)
+                
+            return stmt.If(condition, thenBranch, elseBranch)
         
         else:
             # Skip empty lines
@@ -83,9 +106,10 @@ class Parser():
         statements = []
 
         while not self.check(TokenType.END) and not self.isAtEnd():
-            statements.append(self.declaration())
+            declaration = self.declaration()
+            if declaration: statements.append(declaration)
 
-        self.expect(TokenType.END, "Expected \"end\" to terminate the block.")
+        self.expect(TokenType.END, "Expected \"end\" to terminate do-block.")
         return statements
 
     def expression(self) -> Expr:

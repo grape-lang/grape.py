@@ -23,7 +23,7 @@ class Block(Stmt):
 
     def __str__(self) -> str:
         statements = [str(statement) for statement in self.statements]
-        return " ( block " + " ".join(statements) + " ) "
+        return " ( block do " + " ".join(statements) + " ) "
 
 class Inspect(Stmt):
     def __init__(self, expression: Expr):

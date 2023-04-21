@@ -3,7 +3,7 @@ from syntax.tokens import Token
 from syntax.stmt import Stmt
 
 def printTokens(tokens: list[Token]) -> None:
-    print(formatSuccess("Scanned tokens:"))
+    print(formatSuccess("Scanned tokens (" + str(len(tokens)) +"):"))
     for token in tokens:
         print(token)
     

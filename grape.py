@@ -31,11 +31,10 @@ class Grape:
         parser = Parser(self, tokens)
         statements = parser.parse()
 
-        if self.debug: 
-            debug.printStatements(statements)
-            debug.printRunning()
+        if self.debug: debug.printStatements(statements)
 
         if self.errorHandler.hadError: return
+        elif self.debug: debug.printRunning()
         
         interpreter = Interpreter(self, statements)
         interpreter.interpret()

@@ -61,4 +61,5 @@ class Token:
         self.col = col
 
     def __str__(self) -> str:
-        return str(self.token_type) + " " + str(self.lexeme) + " " + str(self.literal)
+        lexeme = str(self.lexeme) if self.lexeme != "\n" else "\\n"
+        return str(self.token_type) + " " + lexeme + " " + str(self.literal)
