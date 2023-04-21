@@ -1,6 +1,9 @@
 x = 2
 y = x + 1 * 4
-//inspect x + y
+inspect x + y
+
+inspect "hi" or 2
+inspect false or "yes"
 
 if(x == 2) do
     inspect y
@@ -8,18 +11,18 @@ else
     inspect "oops"
 end
 
-//do
-//    inspect x
-//    x = 4
-//    inspect x
-//
-//    do
-//        inspect x
-//        x = x - 1
-//        inspect x
-//    end
-//
-//    inspect x
-//end
+do
+    inspect x
+    x = 4
+    inspect x
 
-//inspect x
+    do
+        inspect x
+        x = x - 1
+        inspect x
+    end
+
+    inspect x
+end
+
+inspect x

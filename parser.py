@@ -40,68 +40,80 @@ class Parser():
         return decl.Variable(name, initializer)
 
     def statement(self) -> Stmt:
-        if self.match(TokenType.INSPECT):
-            expression = self.expression()
-
-            self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-            return stmt.Inspect(expression)
+        if self.match(TokenType.IF):
+            return self.ifStmt()
         
-        elif self.match(TokenType.EXIT):
-            if self.check(TokenType.NUMBER):
-                code = self.expression()
-
-                self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-                return stmt.Exit(code)
-            else:
-                self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-                return stmt.Exit()
-            
         elif self.match(TokenType.DO):
             return stmt.Block(self.block())
         
-        elif self.match(TokenType.IF):
-            self.expect(TokenType.LEFT_PAREN, "Missing opening \"(\" before if-statement condition.")
-            condition = self.expression()
-            self.expect(TokenType.RIGHT_PAREN, "Missing closing \")\" after if-statement condition.")
-
-            thenBranch = None
-            elseBranch = None
-            
-            if(self.match(TokenType.DO)):
-                doStatements = []
-                elseStatements = []
-
-                while not ( self.check(TokenType.END) or self.check(TokenType.ELSE) ) or self.isAtEnd():
-                    declaration = self.declaration()
-                    if declaration: doStatements.append(declaration)
-                    
-                thenBranch = stmt.Block(doStatements)
-                
-                if self.match(TokenType.ELSE):
-                    while not self.check(TokenType.END) and not self.isAtEnd():
-                        declaration = self.declaration()
-                        if declaration: elseStatements.append(declaration)
-
-                    elseBranch = stmt.Block(elseStatements)
-
-                self.expect(TokenType.END, "Expected \"end\" to terminate do-else-block.")
-                    
-            else:
-                thenBranch = self.statement()
-
-            if(self.match(TokenType.ELSE)):
-                elseBranch = self.statement()
-                
-            return stmt.If(condition, thenBranch, elseBranch)
+        if self.match(TokenType.INSPECT):
+            return self.inspectStmt()
+        
+        elif self.match(TokenType.EXIT):
+            return self.exitStmt()
         
         else:
             # Skip empty lines
             if not self.match(TokenType.NEWLINE):
                 # It's probably an expression statement.
-                expression = self.expression()
-                self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-                return expression            
+                return self.exprStmt()     
+
+    def ifStmt(self):
+        self.expect(TokenType.LEFT_PAREN, "Missing opening \"(\" before if-statement condition.")
+        condition = self.expression()
+        self.expect(TokenType.RIGHT_PAREN, "Missing closing \")\" after if-statement condition.")
+
+        thenBranch = None
+        elseBranch = None
         
+        if(self.match(TokenType.DO)):
+            doStatements = []
+            elseStatements = []
+
+            while not ( self.check(TokenType.END) or self.check(TokenType.ELSE) ) or self.isAtEnd():
+                declaration = self.declaration()
+                if declaration: doStatements.append(declaration)
+                
+            thenBranch = stmt.Block(doStatements)
+            
+            if self.match(TokenType.ELSE):
+                while not self.check(TokenType.END) and not self.isAtEnd():
+                    declaration = self.declaration()
+                    if declaration: elseStatements.append(declaration)
+
+                elseBranch = stmt.Block(elseStatements)
+
+            self.expect(TokenType.END, "Expected \"end\" to terminate do-else-block.")
+                
+        else:
+            thenBranch = self.statement()
+
+        if(self.match(TokenType.ELSE)):
+            elseBranch = self.statement()
+            
+        return stmt.If(condition, thenBranch, elseBranch)        
+    
+    def inspectStmt(self):
+        expression = self.expression()
+
+        self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
+        return stmt.Inspect(expression)
+    
+    def exitStmt(self):
+        if self.check(TokenType.NUMBER):
+            code = self.expression()
+
+            self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
+            return stmt.Exit(code)
+        else:
+            self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
+            return stmt.Exit()
+        
+    def exprStmt(self):
+        expression = self.expression()
+        self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
+        return expression   
+
     def block(self) -> list[Stmt]:
         statements = []
 
@@ -113,7 +125,27 @@ class Parser():
         return statements
 
     def expression(self) -> Expr:
-        return self.equality()
+        return self.orExpr()
+    
+    def orExpr(self):
+        expression = self.andExpr()
+
+        while(self.match(TokenType.OR)):
+            operator = self.previous()
+            right = self.andExpr()
+            expression = expr.Logical(expression, operator, right)
+
+        return expression
+    
+    def andExpr(self):
+        expression = self.equality()
+
+        while(self.match(TokenType.OR)):
+            operator = self.previous()
+            right = self.equality()
+            expression = expr.Logical(expression, operator, right)
+
+        return expression
 
     def equality(self) -> Expr:
         expression = self.comparison()

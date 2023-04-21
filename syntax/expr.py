@@ -40,6 +40,15 @@ class Tuple(Collection):
         items = [str(item) for item in self.items]
         return "{" + ", ".join(items) + "}"
 
+class Logical(Expr):
+    def __init__(self, left: Expr, operator: Token, right: Expr):
+        self.left = left
+        self.operator = operator
+        self.right = right
+
+    def __str__(self) -> str:
+        return parenthesize(self.operator.lexeme + " " + str(self.left) + " " + str(self.right))
+
 class Unary(Expr):
     def __init__(self, operator: Token, right: Expr):
         self.operator = operator

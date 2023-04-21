@@ -43,7 +43,7 @@ class Interpreter():
             case decl.Variable():
                 return self.evaluateVariableDecl(statement.name, statement.initializer)
 
-    def evaluateIf(self, condition, thenBranch, elseBranch):
+    def evaluateIf(self, condition: Expr, thenBranch: Stmt, elseBranch: Stmt):
         condition = self.evaluateExpression(condition)
 
         if self.isTruthy(condition):
@@ -96,6 +96,9 @@ class Interpreter():
 
             case expr.Tuple():
                 return self.evaluateCollection(expression.items)
+            
+            case expr.Logical():
+                return self.evaluateLogical(expression.left, expression.operator, expression.right)
 
             case expr.Unary():
                 return self.evaluateUnary(expression.operator, expression.right)
@@ -151,6 +154,21 @@ class Interpreter():
     
     def evaluateCollection(self, items: list[Expr]):
         return [self.evaluateExpression(item) for item in items]
+    
+    def evaluateLogical(self, left: Expr, operator: Token, right: Expr):
+        left = self.evaluateExpression(left)
+
+        match operator.token_type:
+            case TokenType.OR: 
+                if self.isTruthy(left):
+                    return left
+                else:
+                    return self.evaluateExpression(right)
+            case TokenType.NOT:
+                if not self.isTruthy(left):
+                    return left
+                else:
+                    return self.evaluateExpression(right)
 
     def evaluateUnary(self, operator: Token, right: Expr):
         right = self.evaluateExpression(right)

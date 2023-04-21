@@ -17,7 +17,9 @@ exit        -> "exit" ( NUMBER | _ ) NEWLINE ;
 doBlock     -> "do" (declaration)* "end" ;
 doElseBlock -> "do" (declaration)* "else" (declaration)* "end" ;
 
-expression  -> equality ;
+expression  -> logic_or ;
+logic_or    -> logic_and ( "or" logic_and )* ;
+logic_and   -> equality ( "and" equality )* ;
 equality    -> comparison ( ( "==" | "!=" ) comparison )* ;
 comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term        -> factor ( ( "+" | "-" ) factor )* ;

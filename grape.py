@@ -8,7 +8,7 @@ from compiler import Interpreter
 
 class Grape:
     def __init__(self):
-        self.debug = True
+        self.debug = False
         self.errorHandler = ErrorHandler()
 
     def runFile(self, filename: str):
