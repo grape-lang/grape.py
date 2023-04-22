@@ -5,7 +5,6 @@ from syntax.stmt import Stmt
 from syntax.expr import Expr
 
 import syntax.stmt as stmt
-import syntax.decl as decl
 import syntax.expr as expr
 
 class Parser():
@@ -17,127 +16,100 @@ class Parser():
 
     def parse(self) -> list[Stmt]:
         while not self.isAtEnd():
-            declaration = self.declaration()
-            if declaration: self.statements.append(declaration)
+            statement = self.statement()
+            if statement: self.statements.append(statement)
             
         return self.statements
         
-    def declaration(self) -> Stmt:
+    def statement(self) -> Stmt:
         try:
-            if self.match(TokenType.IDENTIFIER) and self.match(TokenType.EQUAL): 
-                return self.variableDecl()
-
-            return self.statement()
-        
+            if not self.match(TokenType.NEWLINE): # Skip empty lines
+                statement = self.exprStmt()
+                self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
+                return statement
+            
         except ParseError:
             self.synchronize()
+            
+    def exprStmt(self) -> Stmt:
+        return stmt.ExprStmt(self.expression())  
+    
+    def expression(self) -> Expr:
+        if self.match(TokenType.IDENTIFIER) and self.check(TokenType.EQUAL): 
+                return self.declaration()
         
-    def variableDecl(self) -> Stmt:
-        name = self.doublePrevious()
-        initializer = self.expression()
-
-        self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-        return decl.Variable(name, initializer)
-
-    def statement(self) -> Stmt:
         if self.match(TokenType.IF):
-            return self.ifStmt()
+            return self.conditional_if()
         
         elif self.match(TokenType.DO):
-            return stmt.Block(self.block())
-        
-        if self.match(TokenType.INSPECT):
-            return self.inspectStmt()
-        
-        elif self.match(TokenType.EXIT):
-            return self.exitStmt()
+            return expr.Block(self.block())
         
         else:
-            # Skip empty lines
-            if not self.match(TokenType.NEWLINE):
-                # It's probably an expression statement.
-                return self.exprStmt()     
+            return self.logic_or()
+            
+    def declaration(self) -> Expr:
+        name = self.previous()
+        self.advance()
 
-    def ifStmt(self):
+        initializer = self.expression()
+        return expr.VariableDecl(name, initializer)
+    
+    def conditional_if(self) -> Expr:
         self.expect(TokenType.LEFT_PAREN, "Missing opening \"(\" before if-statement condition.")
-        condition = self.expression()
+        condition = self.logic_or()
         self.expect(TokenType.RIGHT_PAREN, "Missing closing \")\" after if-statement condition.")
-
+        
         thenBranch = None
         elseBranch = None
         
         if(self.match(TokenType.DO)):
-            doStatements = []
-            elseStatements = []
-
-            while not ( self.check(TokenType.END) or self.check(TokenType.ELSE) ) or self.isAtEnd():
-                declaration = self.declaration()
-                if declaration: doStatements.append(declaration)
-                
-            thenBranch = stmt.Block(doStatements)
+            doStatements = self.parseBlock([TokenType.END, TokenType.ELSE])
+            thenBranch = expr.Block(doStatements)
             
             if self.match(TokenType.ELSE):
-                while not self.check(TokenType.END) and not self.isAtEnd():
-                    declaration = self.declaration()
-                    if declaration: elseStatements.append(declaration)
-
-                elseBranch = stmt.Block(elseStatements)
+                elseStatements = self.parseBlock([TokenType.END])
+                elseBranch = expr.Block(elseStatements)
 
             self.expect(TokenType.END, "Expected \"end\" to terminate do-else-block.")
                 
         else:
-            thenBranch = self.statement()
+            thenBranch = self.blockify(self.expression())
 
         if(self.match(TokenType.ELSE)):
-            elseBranch = self.statement()
+            elseBranch = self.blockify(self.expression())
             
-        return stmt.If(condition, thenBranch, elseBranch)        
+        return expr.If(condition, thenBranch, elseBranch) 
     
-    def inspectStmt(self):
-        expression = self.expression()
+    def blockify(self, expression: Expr) -> expr.Block:
+        statement = stmt.ExprStmt(expression)
+        return expr.Block([statement])
 
-        self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-        return stmt.Inspect(expression)
-    
-    def exitStmt(self):
-        if self.check(TokenType.NUMBER):
-            code = self.expression()
-
-            self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-            return stmt.Exit(code)
-        else:
-            self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-            return stmt.Exit()
-        
-    def exprStmt(self):
-        expression = self.expression()
-        self.expect(TokenType.NEWLINE, "Unterminated statement, no newline present.")
-        return expression   
-
-    def block(self) -> list[Stmt]:
+    def parseBlock(self, endTokens: list[TokenType]):
         statements = []
 
-        while not self.check(TokenType.END) and not self.isAtEnd():
-            declaration = self.declaration()
-            if declaration: statements.append(declaration)
+        while not self.check_multiple(endTokens) and not self.isAtEnd():
+            statement = self.statement()
+            if statement: statements.append(statement)
+
+        return statements
+
+    def block(self) -> list[Stmt]:
+        statements = self.parseBlock([TokenType.END])
 
         self.expect(TokenType.END, "Expected \"end\" to terminate do-block.")
         return statements
-
-    def expression(self) -> Expr:
-        return self.orExpr()
     
-    def orExpr(self):
-        expression = self.andExpr()
+    def logic_or(self) -> Expr:
+        expression = self.logic_and()
 
         while(self.match(TokenType.OR)):
             operator = self.previous()
-            right = self.andExpr()
+            right = self.logic_and()
             expression = expr.Logical(expression, operator, right)
 
         return expression
     
-    def andExpr(self):
+    def logic_and(self) -> Expr:
         expression = self.equality()
 
         while(self.match(TokenType.OR)):
@@ -203,7 +175,7 @@ class Parser():
     def primary(self) -> Expr:
         if self.match(TokenType.FALSE): return expr.Literal(False)
         if self.match(TokenType.TRUE): return expr.Literal(True)
-        if self.match(TokenType.IDENTIFIER): return expr.Variable(self.previous())
+        if self.match(TokenType.IDENTIFIER): return expr.VariableExpr(self.previous())
 
         if self.match_multiple([TokenType.NUMBER, TokenType.STRING, TokenType.ATOM]):
             return expr.Literal(self.previous().literal)
@@ -239,7 +211,7 @@ class Parser():
 
     def match_multiple(self, token_types: list[TokenType]) -> bool:
         for token_type in token_types:
-            if self.match(token_type) == True: return True
+            if self.match(token_type): return True
             
         return False
     
@@ -249,6 +221,12 @@ class Parser():
             return True
         else:
             return False
+        
+    def check_multiple(self, token_types: list[TokenType]):
+        for token_type in token_types:
+            if self.check(token_type): return True
+
+        return False
 
     def check(self, token_type: TokenType) -> bool:
         if self.isAtEnd(): return False
@@ -266,9 +244,6 @@ class Parser():
 
     def previous(self) -> Token:
         return self.getTokenByIndex(self.current - 1)
-    
-    def doublePrevious(self) -> Token:
-        return self.getTokenByIndex(self.current - 2)
     
     def getTokenByIndex(self, index: int) -> Token:
         return self.tokens[index]

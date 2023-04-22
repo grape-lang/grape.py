@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 import runtime.debug as debug
 from runtime.repl import Repl
@@ -8,7 +10,7 @@ from compiler import Interpreter
 
 class Grape:
     def __init__(self):
-        self.debug = False
+        self.debug = True
         self.errorHandler = ErrorHandler()
 
     def runFile(self, filename: str):
@@ -49,7 +51,7 @@ if __name__ == "__main__":
     grape = Grape()
     
     if len(sys.argv) > 2:
-        print("Usage: grape [script]")
+        print("Usage: grape [path]")
         exit(64)
 
     elif len(sys.argv) == 2:

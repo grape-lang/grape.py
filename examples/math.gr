@@ -1,28 +1,9 @@
 x = 2
-y = x + 1 * 4
-inspect x + y
 
-inspect "hi" or 2
-inspect false or "yes"
+y = if(x == 2) 3 else 4
 
-if(x == 2) do
-    inspect y
-else
-    inspect "oops"
-end
-
-do
-    inspect x
-    x = 4
-    inspect x
-
-    do
-        inspect x
-        x = x - 1
-        inspect x
+y = if(x == 2) do
+        3 
+    else
+        4
     end
-
-    inspect x
-end
-
-inspect x

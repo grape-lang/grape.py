@@ -7,7 +7,6 @@ from syntax.stmt import Stmt
 from syntax.expr import Expr
 
 import syntax.stmt as stmt
-import syntax.decl as decl
 import syntax.expr as expr
 
 class Interpreter():
@@ -26,60 +25,22 @@ class Interpreter():
 
         except UndefinedError as e:
             self.errorHandler.report("Runtime error", e.name.line, quote(e.name.lexeme), e.message)
-
-    def stringifyOutput(self, output: str) -> str:
-        return str(output)
     
     def evaluateStatement(self, statement: Stmt):
-        match statement:
-            case stmt.If():
-                return self.evaluateIf(statement.condition, statement.thenBranch, statement.elseBranch)
-            case stmt.Block():
-                return self.evaluateBlock(statement.statements)
-            case stmt.Inspect(): 
-                return self.evaluateInspectStmt(statement.expression)
-            case stmt.Exit():
-                return self.evaluateExitStmt(statement.code)
-            case decl.Variable():
-                return self.evaluateVariableDecl(statement.name, statement.initializer)
-
-    def evaluateIf(self, condition: Expr, thenBranch: Stmt, elseBranch: Stmt):
-        condition = self.evaluateExpression(condition)
-
-        if self.isTruthy(condition):
-            return self.evaluateStatement(thenBranch)
-        else:
-            if elseBranch:
-                return self.evaluateStatement(elseBranch)
-
-    def evaluateBlock(self, statements: list[Stmt]):
-        outerEnv = self.env
-        blockEnv = Env(outerEnv)
-        
-        self.env = blockEnv
-        for statement in statements:
-            self.evaluateStatement(statement)
-
-        self.env = outerEnv
-
-    def evaluateInspectStmt(self, expression: Expr):
-        value = self.evaluateExpression(expression)
-        print(self.stringifyOutput(value))
-
-    def evaluateExitStmt(self, code):
-        if code:
-            code = self.evaluateExpression(code)
-            exit(int(code))
-        else:
-            exit()
-
-    def evaluateVariableDecl(self, name: Token, initializer: Expr):
-        value = self.evaluateExpression(initializer)
-        self.env.define(name, value)
+        return self.evaluateExpression(statement.expression)
 
     def evaluateExpression(self, expression: Expr):
         match expression:
-            case expr.Variable():
+            case expr.If():
+                return self.evaluateIf(expression.condition, expression.thenBranch, expression.elseBranch)
+            
+            case expr.Block():
+                return self.evaluateBlock(expression.statements)
+            
+            case expr.VariableDecl():
+                return self.evaluateVariableDecl(expression.name, expression.initializer)
+            
+            case expr.VariableExpr():
                 return self.evaluateVariableExpr(expression.name)
             
             case expr.Binary(): 
@@ -102,6 +63,33 @@ class Interpreter():
 
             case expr.Unary():
                 return self.evaluateUnary(expression.operator, expression.right)
+
+    def evaluateVariableDecl(self, name: Token, initializer: Expr):
+        value = self.evaluateExpression(initializer)
+        self.env.define(name, value)
+        return value
+
+
+    def evaluateIf(self, condition: Expr, thenBranch: Stmt, elseBranch: Stmt):
+        condition = self.evaluateExpression(condition)
+
+        if self.isTruthy(condition):
+            return self.evaluateExpression(thenBranch)
+        else:
+            if elseBranch:
+                return self.evaluateExpression(elseBranch)
+
+    def evaluateBlock(self, statements: list[Stmt]):
+        outerEnv = self.env
+        blockEnv = Env(outerEnv)
+        
+        self.env = blockEnv
+
+        for statement in statements:
+            output = self.evaluateStatement(statement)
+
+        self.env = outerEnv
+        return output
 
     def evaluateVariableExpr(self, name: Token):
         return self.env.get(name)
