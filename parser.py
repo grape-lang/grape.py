@@ -255,9 +255,9 @@ class Parser():
 
     def syntaxError(self, token: Token, message: str) -> None:
         if token.token_type == TokenType.EOF:
-            error = self.errorHandler.report("Syntax error", token.line, "EOF", message)
+            error = self.errorHandler.report("Syntax error", token.line, token.col, "EOF", message)
         else:
-            error = self.errorHandler.report("Syntax error", token.line, "'" + token.lexeme + "'", message)
+            error = self.errorHandler.report("Syntax error", token.line, token.col, "'" + token.lexeme + "'", message)
 
         raise ParseError(error)
 

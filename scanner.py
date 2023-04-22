@@ -85,7 +85,7 @@ class Scanner:
             self.advance()
 
         if self.isAtEnd():
-            self.errorHandler.report("Syntax error", self.line, self.start, "Unterminated string")
+            self.errorHandler.report("Syntax error", self.line, self.start, truncateString(self.currentString()), "Unterminated string")
             return
 
         # Advance once more for the closing "
@@ -150,7 +150,7 @@ class Scanner:
         if unexpectedString != "":
             message = "Unexpected \"" + unexpectedString + "\". " + message
 
-        self.errorHandler.report("Syntax error", self.line, self.current, message)
+        self.errorHandler.report("Syntax error", self.line, self.current, "", message)
 
     def advance(self) -> str:
         self.current += 1
@@ -191,3 +191,7 @@ class Scanner:
 
 def charRange(start: str, stop: str) -> range:
     return (chr(n) for n in range(ord(start), ord(stop) + 1))
+
+def truncateString(string: str, length: int = 6) -> str:
+    string = string.split("\n")[0]
+    return (string[:length] + '..') if len(string) > length else string
