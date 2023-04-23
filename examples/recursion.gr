@@ -1,5 +1,7 @@
-loop = fn(i) do
-    if(i <= 50) do
+maxIterations = 50
+
+fn loop(i) do
+    if(i <= maxIterations) do
         print(i)
         loop(i + 1)
     else

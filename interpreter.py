@@ -185,7 +185,7 @@ class Interpreter():
         arguments = [self.evaluateExpression(expression) for expression in arguments]
 
         if not len(arguments) in function.arity:
-            raise TypeCheckError(closingParenToken, "Expected " + function.arity + "arguments, but got " + len(arguments) + "." )
+            raise TypeCheckError(closingParenToken, "Expected " + str(function.arity[0]) + " arguments, but got " + str(len(arguments)) + "." )
 
         return function.call(self, arguments, closingParenToken)
 

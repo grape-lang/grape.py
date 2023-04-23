@@ -1,22 +1,39 @@
-// declared style
-fn add(x, y) do
-    x + y
+// anonymous style
+add = fn(x, y) do
+    // last expression in block is automatically returned
+    x + y 
 end
 
-// anonymous style
-substract = fn(x, y) do
+// declared style
+// this binds the lambda fn(x, y) ... to the identifier sub,
+// but also returns it (see more below)
+fn sub(x, y) do
     x - y
 end
 
-x = y = 4
+x = 35
+y = 34
 ans = add(x, y)
 
 // will print #Function <add>
 print(add)
 print(ans)
 
-ans = substract(x, y)
+x = 520
+y = 100
+ans = sub(x, y)
 
 // will print #Function <anonymous>
-print(substract)
+print(sub)
 print(ans)
+
+// everything in Grape is an expression and
+// that means a function also returns itself, 
+// which can be used to alias it
+factor = fn fac(x, y) do
+    x * y
+end
+
+// will print #Function <fac>
+print(factor)
+print(fac(2, 25) + factor(1, 19)) 
