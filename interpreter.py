@@ -15,8 +15,9 @@ import syntax.expr as expr
 class Interpreter():
     def __init__(self, grape, statements: list[Stmt]):
         self.globalEnv = Env()
-        self.globalEnv.define_builtin(printFn.name, printFn)
-        self.globalEnv.define_builtin(exitFn.name, exitFn)
+        self.globalEnv.define_builtin(printFn)
+        self.globalEnv.define_builtin(exitFn)
+        self.globalEnv.define_builtin(lenFn)
 
         self.env = self.globalEnv
         self.errorHandler = grape.errorHandler

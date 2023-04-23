@@ -1,3 +1,5 @@
-x = 1
-exit()
+y = 1
+x = if(y == 1) 2 else 3
 print(x)
+print(len([x, y]))
+exit(1)

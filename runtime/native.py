@@ -1,6 +1,6 @@
 from decimal import *
 
-from syntax.tokens import Token, TokenType
+from syntax.tokens import *
 from syntax.callable import *
 
 def printImpl(interpreter, errorToken: Token, arguments: list):
@@ -19,3 +19,8 @@ def exitImpl(interpreter, errorToken: Token, arguments: list):
         exit()
 
 exitFn = Callable("exit", (0, 1), exitImpl)
+
+def lenImpl(interpreter, errorToken: Token, arguments: list):
+    return round(Decimal(len(arguments[0])), maxDecimals)
+
+lenFn = Callable("len", (1, ), lenImpl)
