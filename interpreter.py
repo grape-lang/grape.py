@@ -6,7 +6,7 @@ from syntax.tokens import *
 from syntax.stmt import Stmt
 from syntax.expr import Expr
 
-from syntax.callable import Callable
+from syntax.callable import *
 from runtime.native import *
 
 import syntax.stmt as stmt
@@ -75,6 +75,9 @@ class Interpreter():
             case expr.Call():
                 return self.evaluateCall(expression.callee, expression.closingParenToken, expression.arguments)
 
+            case expr.Lambda():
+                return self.evaluateLambda(expression)
+
             case expr.Unary():
                 return self.evaluateUnary(expression.operator, expression.right)
 
@@ -93,8 +96,8 @@ class Interpreter():
             if elseBranch:
                 return self.evaluateExpression(elseBranch)
 
-    def evaluateBlock(self, statements: list[Stmt]):
-        outerEnv = self.env
+    def evaluateBlock(self, statements: list[Stmt], env = None):
+        outerEnv = env or self.env
         blockEnv = Env(outerEnv)
         
         self.env = blockEnv
@@ -183,7 +186,10 @@ class Interpreter():
         if not len(arguments) in function.arity:
             raise TypeCheckError(closingParenToken, "Expected " + function.arity + "arguments, but got " + len(arguments) + "." )
 
-        return function.call(self, closingParenToken, arguments)
+        return function.call(self, arguments, closingParenToken)
+
+    def evaluateLambda(self, declaration):
+        return Lambda(declaration)
 
     def evaluateUnary(self, operator: Token, right: Expr):
         right = self.evaluateExpression(right)

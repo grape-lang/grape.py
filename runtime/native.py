@@ -3,12 +3,15 @@ from decimal import *
 from syntax.tokens import *
 from syntax.callable import *
 
-def printImpl(interpreter, errorToken: Token, arguments: list):
-    print(str(arguments[0]))
+def printImpl(arguments: list, errorToken: Token):
+    string = str(arguments[0])
 
-printFn = Callable("print", (1, ), printImpl)
+    print(string)
+    return string
 
-def exitImpl(interpreter, errorToken: Token, arguments: list):
+printFn = Builtin("print", (1, ), printImpl)
+
+def exitImpl(arguments: list, errorToken: Token):
     if len(arguments) == 1:
         exitCode = arguments[0] 
         if isinstance(exitCode, Decimal):
@@ -18,9 +21,9 @@ def exitImpl(interpreter, errorToken: Token, arguments: list):
     else:
         exit()
 
-exitFn = Callable("exit", (0, 1), exitImpl)
+exitFn = Builtin("exit", (0, 1), exitImpl)
 
-def lenImpl(interpreter, errorToken: Token, arguments: list):
+def lenImpl(arguments: list, errorToken: Token):
     return round(Decimal(len(arguments[0])), maxDecimals)
 
-lenFn = Callable("len", (1, ), lenImpl)
+lenFn = Builtin("len", (1, ), lenImpl)

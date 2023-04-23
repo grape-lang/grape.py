@@ -51,6 +51,11 @@ class Call(Expr):
         arguments = [str(argument) for argument in self.arguments]
         return " ( call " + str(self.callee) + " with args " + ", ".join(arguments) + " ) "
     
+class Lambda(Expr):
+    def __init__(self, params: list[Token], body: Block):
+        self.params = params
+        self.body = body
+
 class Grouping(Expr):
     def __init__(self, expression: Expr):
         self.expression = expression

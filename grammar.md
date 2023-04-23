@@ -28,11 +28,12 @@ primary     -> literal | grouping ;
 
 arguments   -> collection ;
 
-literal     -> NUMBER | TEXT | ATOM | bool | list | tuple | IDENTIFIER ;
+literal     -> NUMBER | TEXT | ATOM | bool | list | tuple | lamdba | IDENTIFIER ;
 bool        -> "true" | "false" ;
 list        -> "[" collection "]" ;
 tuple       -> "{" collection "}" ;
 grouping    -> "(" expression ")" ;
+lambda      -> "fn(" arguments? ")" block
 
 collection  -> expression ("," expression)* ;
 ```

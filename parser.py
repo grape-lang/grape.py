@@ -1,5 +1,6 @@
 # type: ignore
 from syntax.tokens import *
+from syntax.callable import *
 
 from syntax.stmt import Stmt
 from syntax.expr import Expr
@@ -36,18 +37,21 @@ class Parser():
     
     def expression(self) -> Expr:
         if self.check_sequence([TokenType.IDENTIFIER, TokenType.EQUAL]): 
-                return self.declaration()
+            return self.variableDeclaration()
+        
+        if self.match(TokenType.FN):
+            return self.lambdaDeclaration()
         
         if self.match(TokenType.IF):
-            return self.conditional_if()
+            return self.conditionalIf()
         
         elif self.match(TokenType.DO):
             return expr.Block(self.block())
         
         else:
-            return self.logic_or()
+            return self.logicOr()
             
-    def declaration(self) -> Expr:
+    def variableDeclaration(self) -> Expr:
         # Consumes the identifier. 
         # Needed because we use `check` and not `match` 
         # in the callee of this function.
@@ -60,9 +64,33 @@ class Parser():
         initializer = self.expression()
         return expr.VariableDecl(name, initializer)
     
-    def conditional_if(self) -> Expr:
+    def lambdaDeclaration(self) -> Expr:
+        return self.parseFunction()
+    
+    def parseFunction(self) -> Expr:
+        self.expect(TokenType.LEFT_PAREN, "Missing opening \"(\" before function arguments.")
+
+        if not self.check(TokenType.RIGHT_PAREN):
+            invalidParameterErrorMessage = "Parameters for an function can only be identifiers."
+
+            parameter = self.expect(TokenType.IDENTIFIER, invalidParameterErrorMessage)
+            parameters = [parameter]
+
+            while self.match(TokenType.COMMA):
+                parameter = self.expect(TokenType.IDENTIFIER, invalidParameterErrorMessage)
+                parameters.append(parameter)
+
+        self.expect(TokenType.RIGHT_PAREN, "Missing closing \"(\" after function arguments.")
+
+        self.expect(TokenType.DO, "Expected do-end block after function header.")
+
+        body = self.block()
+
+        return expr.Lambda(parameters, body)
+    
+    def conditionalIf(self) -> Expr:
         self.expect(TokenType.LEFT_PAREN, "Missing opening \"(\" before if-statement condition.")
-        condition = self.logic_or()
+        condition = self.logicOr()
         self.expect(TokenType.RIGHT_PAREN, "Missing closing \")\" after if-statement condition.")
         
         thenBranch = None
@@ -105,17 +133,17 @@ class Parser():
         self.expect(TokenType.END, "Expected \"end\" to terminate do-block.")
         return statements
     
-    def logic_or(self) -> Expr:
-        expression = self.logic_and()
+    def logicOr(self) -> Expr:
+        expression = self.logicAnd()
 
         while(self.match(TokenType.OR)):
             operator = self.previous()
-            right = self.logic_and()
+            right = self.logicAnd()
             expression = expr.Logical(expression, operator, right)
 
         return expression
     
-    def logic_and(self) -> Expr:
+    def logicAnd(self) -> Expr:
         expression = self.equality()
 
         while(self.match(TokenType.OR)):
