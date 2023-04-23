@@ -36,6 +36,12 @@ class Lambda(Callable):
 
         return interpreter.evaluateBlock(self.declaration.body, env)
 
+class Function(Lambda):
+    def __init__(self, declaration: expr.Function):
+        super().__init__(declaration)
+        # Override the "anonymous" name field from Lambda
+        self.name = declaration.name.lexeme
+
 class ArgumentError(Exception):
     def __init__(self, token: Token, message: str):
         self.token = token

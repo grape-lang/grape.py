@@ -50,11 +50,22 @@ class Call(Expr):
     def __str__(self) -> str:
         arguments = [str(argument) for argument in self.arguments]
         return " ( call " + str(self.callee) + " with args " + ", ".join(arguments) + " ) "
-    
+ 
 class Lambda(Expr):
     def __init__(self, params: list[Token], body: Block):
         self.params = params
         self.body = body
+
+    def __str__(self) -> str:
+        return " ( fn " + str(self.body) + " )"
+
+class Function(Lambda):
+    def __init__(self, name: Token, params: list[Token], body: Block):
+        self.name = name
+        super().__init__(params, body)
+
+    def __str__(self) -> str:
+        return " ( fn " + self.name.lexeme + " " + str(self.body) + " )"
 
 class Grouping(Expr):
     def __init__(self, expression: Expr):

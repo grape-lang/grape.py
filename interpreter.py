@@ -1,13 +1,12 @@
 from env import *
+from syntax.callable import *
+from runtime.builtin import *
 
 from decimal import *
 from syntax.tokens import *
 
 from syntax.stmt import Stmt
 from syntax.expr import Expr
-
-from syntax.callable import *
-from runtime.native import *
 
 import syntax.stmt as stmt
 import syntax.expr as expr
@@ -74,10 +73,13 @@ class Interpreter():
             
             case expr.Call():
                 return self.evaluateCall(expression.callee, expression.closingParenToken, expression.arguments)
+            
+            case expr.Function():
+                return self.evaluateFunction(expression)
 
             case expr.Lambda():
                 return self.evaluateLambda(expression)
-
+            
             case expr.Unary():
                 return self.evaluateUnary(expression.operator, expression.right)
 
@@ -85,7 +87,6 @@ class Interpreter():
         value = self.evaluateExpression(initializer)
         self.env.define(name, value)
         return value
-
 
     def evaluateIf(self, condition: Expr, thenBranch: Stmt, elseBranch: Stmt):
         condition = self.evaluateExpression(condition)
@@ -97,8 +98,8 @@ class Interpreter():
                 return self.evaluateExpression(elseBranch)
 
     def evaluateBlock(self, statements: list[Stmt], env = None):
-        outerEnv = env or self.env
-        blockEnv = Env(outerEnv)
+        outerEnv = self.env
+        blockEnv = Env(env or outerEnv)
         
         self.env = blockEnv
 
@@ -187,6 +188,11 @@ class Interpreter():
             raise TypeCheckError(closingParenToken, "Expected " + function.arity + "arguments, but got " + len(arguments) + "." )
 
         return function.call(self, arguments, closingParenToken)
+
+    def evaluateFunction(self, declaration):
+        function = Function(declaration)
+        self.env.define(declaration.name, function)
+        return function
 
     def evaluateLambda(self, declaration):
         return Lambda(declaration)

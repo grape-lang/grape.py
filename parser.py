@@ -40,7 +40,10 @@ class Parser():
             return self.variableDeclaration()
         
         if self.match(TokenType.FN):
-            return self.lambdaDeclaration()
+            if self.match(TokenType.IDENTIFIER):
+                return self.functionDeclaration()
+            else:
+                return self.lambdaDeclaration()
         
         if self.match(TokenType.IF):
             return self.conditionalIf()
@@ -64,10 +67,16 @@ class Parser():
         initializer = self.expression()
         return expr.VariableDecl(name, initializer)
     
-    def lambdaDeclaration(self) -> Expr:
-        return self.parseFunction()
+    def functionDeclaration(self) -> Expr:
+        name = self.previous()
+        (parameters, body) = self.parseFunction()
+        return expr.Function(name, parameters, body)
     
-    def parseFunction(self) -> Expr:
+    def lambdaDeclaration(self) -> Expr:
+        (parameters, body) = self.parseFunction()
+        return expr.Lambda(parameters, body)
+    
+    def parseFunction(self) -> (list[Token], expr.Block):
         self.expect(TokenType.LEFT_PAREN, "Missing opening \"(\" before function arguments.")
 
         if not self.check(TokenType.RIGHT_PAREN):
@@ -86,7 +95,7 @@ class Parser():
 
         body = self.block()
 
-        return expr.Lambda(parameters, body)
+        return (parameters, body)
     
     def conditionalIf(self) -> Expr:
         self.expect(TokenType.LEFT_PAREN, "Missing opening \"(\" before if-statement condition.")

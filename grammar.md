@@ -6,9 +6,13 @@ This is the grammar for parsing programs in the Grape Programming Language.
 program     -> statement* EOF ;
 
 statement   -> expression NEWLINE ;
-expression  -> declaration | if | do | logic_or ;
+expression  -> variableDecl | if | function | do | logic_or ;
 
-declaration -> IDENTIFIER "=" expression ; 
+function    -> functionDecl | lamda ;
+
+variableDecl-> IDENTIFIER "=" expression ; 
+functionDecl-> "fn" IDENTIFIER "(" arguments? ")" block ;
+lambda      -> "fn(" arguments? ")" block ;
 
 // scoped
 do          -> "do" statement* "end" ; 
@@ -28,12 +32,11 @@ primary     -> literal | grouping ;
 
 arguments   -> collection ;
 
-literal     -> NUMBER | TEXT | ATOM | bool | list | tuple | lamdba | IDENTIFIER ;
+literal     -> NUMBER | TEXT | ATOM | bool | list | tuple | IDENTIFIER ;
 bool        -> "true" | "false" ;
 list        -> "[" collection "]" ;
 tuple       -> "{" collection "}" ;
 grouping    -> "(" expression ")" ;
-lambda      -> "fn(" arguments? ")" block
 
 collection  -> expression ("," expression)* ;
 ```
