@@ -79,11 +79,13 @@ class Parser():
     def parseFunction(self) -> (list[Token], expr.Block):
         self.expect(TokenType.LEFT_PAREN, "Missing opening \"(\" before function arguments.")
 
+        parameters = []
+
         if not self.check(TokenType.RIGHT_PAREN):
             invalidParameterErrorMessage = "Parameters for an function can only be identifiers."
 
             parameter = self.expect(TokenType.IDENTIFIER, invalidParameterErrorMessage)
-            parameters = [parameter]
+            parameters.append(parameter)
 
             while self.match(TokenType.COMMA):
                 parameter = self.expect(TokenType.IDENTIFIER, invalidParameterErrorMessage)

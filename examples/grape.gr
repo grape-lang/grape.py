@@ -6,17 +6,19 @@ namespace grape do
         if(len(argv) > 2) do
             print("Usage: grape [script]")
 
-        else if(len(argv) == 2) do
-            case runFile(argv[1]) do
-                Ok, do
-                    exit()
-                end
-                Error, do
-                    exit(65)
-                end
-            end 
-        else
-            repl()
+        else 
+            if(len(argv) == 2) do
+                case runFile(argv[1]) do
+                    Ok, do
+                        exit()
+                    end
+                    Error, do
+                        exit(65)
+                    end
+                end 
+            else
+                repl()
+            end
         end
     end
 

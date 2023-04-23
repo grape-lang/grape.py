@@ -141,7 +141,7 @@ class Scanner:
         self.addToken(TokenType.IDENTIFIER)
 
     def isAlpha(self, c: str) -> bool:
-        return c in charRange("a", "z") or c == "_"
+        return c in charRange("a", "z") or c in charRange("A", "Z") or c == "_"
 
     def isAlphaNumeric(self, c: str) -> bool:
         return self.isAlpha(c) or c.isdigit()
