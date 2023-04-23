@@ -114,7 +114,7 @@ class Scanner:
                 currentDecimal += 1
 
         if currentDecimal > maxDecimals:
-            self.errorHandler.warn(self.line, "The max amount of decimals is " + str(maxDecimals) + ". Your value is being rounded up.")
+            self.errorHandler.warn(self.line, self.current, "The max amount of decimals is " + str(maxDecimals) + ". Your value is being rounded up.")
         
         self.addToken(TokenType.NUMBER, round(Decimal(self.currentString()), 3))
 

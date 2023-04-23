@@ -47,20 +47,40 @@ class Grape:
             else:
                 debug.printDone()
 
+def description() -> None:
+    print("A general purpose programming language made for rapid-pase prototyping.")
+    print("")
+
+def usage(binaryName: str) -> None:
+    print("Usage: ")
+    print("     " + binaryName + " [options] [path]")
+    print("")
+    print("OPTIONS:")
+    print("     --help: print this help")
+    print("")
+
+
+def cjop(list: list) -> tuple[any, list]:
+    return (list[0], list[1:])
+
 if __name__ == "__main__":
     grape = Grape()
+    (binaryName, argv) = cjop(sys.argv)
     
-    if len(sys.argv) > 2:
-        print("Usage: grape [path]")
+    if len(argv) >= 2:
+        grape.errorHandler.error(0, 0, "Too many arguments provided")
+        usage(binaryName)
         exit(64)
 
-    elif len(sys.argv) == 2:
-        grape.runFile(sys.argv[1])
+    elif len(argv) == 1:
+        match argv[0]:
+            case "--help":
+                description()
+                usage(binaryName)
 
-        if grape.errorHandler.hadError: 
-            exit(65)
-
-        exit()
+            case filePath:
+                grape.runFile(sys.argv[1])
+                if grape.errorHandler.hadError: exit(65)
 
     else:
         grape.startREPL()

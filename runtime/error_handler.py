@@ -5,7 +5,7 @@ class ErrorHandler:
 
     def report(self, kind: str, line: int, col: int, location: str = "", message: str = "") -> str: 
         self.hadError = True
-        header = "[line " + str(line) + ":" + str(col) + "]"
+        
         errorMessage = kind
         
         if location and location != "":
@@ -14,11 +14,15 @@ class ErrorHandler:
         if message and message != "":
             errorMessage += ": " + message
     
-        print(term.colors.FAIL + header + " " + errorMessage + term.colors.NORMAL)
+        self.error(line, col, errorMessage)
         return errorMessage
     
-    def warn(self, line: int, message: str) -> str: 
-        header = "[line " + str(line) + "]"
+    def error(self, line: int, col: int, message: str) -> str:
+        header = "[line " + str(line) + ":" + str(col) + "]"
+        print(term.colors.FAIL + header + " " + message + term.colors.NORMAL)
+    
+    def warn(self, line: int, col: int, message: str) -> str: 
+        header = "[line " + str(line) + ":" + str(col) + "]"
         warningMessage = message.lower()    
         
         print(term.colors.WARNING + header + " " + warningMessage + term.colors.NORMAL)

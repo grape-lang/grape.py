@@ -24,7 +24,7 @@ class Interpreter():
             self.errorHandler.report("Runtime error", e.token.line, e.token.col, quote(e.token.lexeme), e.message)
 
         except UndefinedError as e:
-            self.errorHandler.report("Runtime error", e.name.line, e.token.col, quote(e.name.lexeme), e.message)
+            self.errorHandler.report("Runtime error", e.name.line, e.name.col, quote(e.name.lexeme), e.message)
     
     def evaluateStatement(self, statement: Stmt):
         return self.evaluateExpression(statement.expression)
