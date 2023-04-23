@@ -8,6 +8,9 @@ class Env:
     def define(self, name: Token, value: any):
         self.values[name.lexeme] = value
 
+    def define_builtin(self, name: str, value: any):
+        self.values[name] = value            
+
     def get(self, name: Token) -> any:
         if name.lexeme in self.values:
             return self.values[name.lexeme]

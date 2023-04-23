@@ -35,7 +35,7 @@ class Parser():
         return stmt.ExprStmt(self.expression())  
     
     def expression(self) -> Expr:
-        if self.match(TokenType.IDENTIFIER) and self.check(TokenType.EQUAL): 
+        if self.check_sequence([TokenType.IDENTIFIER, TokenType.EQUAL]): 
                 return self.declaration()
         
         if self.match(TokenType.IF):
@@ -48,7 +48,13 @@ class Parser():
             return self.logic_or()
             
     def declaration(self) -> Expr:
+        # Consumes the identifier. 
+        # Needed because we use `check` and not `match` 
+        # in the callee of this function.
+        self.advance() 
         name = self.previous()
+
+        # Concums the equal (=) sign.
         self.advance()
 
         initializer = self.expression()
@@ -170,7 +176,28 @@ class Parser():
 
             return Unary(operator, right)
         
-        return self.primary()
+        return self.call()
+    
+    def call(self) -> Expr:
+        expression = self.primary()
+
+        while self.match(TokenType.LEFT_PAREN):
+            expression = self.finishCall(expression)
+
+        return expression
+
+    def finishCall(self, callee: Expr) -> Expr:
+        arguments = []
+        
+        if not self.check(TokenType.RIGHT_PAREN):
+            arguments.append(self.expression())
+            while self.match(TokenType.COMMA):
+                if len(arguments) >= 255: self.syntaxError(self.peek(), "Can't have more than 255 arguments in a function call.")
+                arguments.append(self.expression())
+
+        closingParenToken = self.expect(TokenType.RIGHT_PAREN, "Expected \"\" after arguments in function call.")
+
+        return expr.Call(callee, closingParenToken, arguments)
     
     def primary(self) -> Expr:
         if self.match(TokenType.FALSE): return expr.Literal(False)
@@ -181,33 +208,34 @@ class Parser():
             return expr.Literal(self.previous().literal)
         
         if self.match(TokenType.LEFT_BRACKET): 
-            expression = self.expression()
-            items = [expression]
-
-            while self.match(TokenType.COMMA):
-                expression = self.expression()
-                items.append(expression)
+            items = self.collection()
 
             self.expect(TokenType.RIGHT_BRACKET, "Missing \"]\" to close list.")
             return expr.List(items)
         
         if self.match(TokenType.LEFT_BRACE): 
-            expression = self.expression()
-            items = [expression]
-
-            while self.match(TokenType.COMMA):
-                expression = self.expression()
-                items.append(expression)
+            items= self.collection()
 
             self.expect(TokenType.RIGHT_BRACE, "Missing \"}\" to close tuple.")
             return expr.Tuple(items)
         
         if self.match(TokenType.LEFT_PAREN): 
             expression = self.expression()
+
             self.expect(TokenType.RIGHT_PAREN, "Missing \")\" after expression.")
             return expr.Grouping(expression)
         
         self.syntaxError(self.peek(), "Expected expression.")
+
+    def collection(self) -> list[Expr]:
+        expression = self.expression()
+        items = [expression]
+
+        while self.match(TokenType.COMMA):
+            expression = self.expression()
+            items.append(expression)
+
+        return items
 
     def match_multiple(self, token_types: list[TokenType]) -> bool:
         for token_type in token_types:
@@ -222,12 +250,20 @@ class Parser():
         else:
             return False
         
-    def check_multiple(self, token_types: list[TokenType]):
+    def check_multiple(self, token_types: list[TokenType]) -> bool:
         for token_type in token_types:
             if self.check(token_type): return True
 
         return False
+    
+    def check_sequence(self, token_types: list[TokenType]) -> bool:
+        acc = []
+        for i in range(len(token_types)):
+            token = self.getTokenByIndex(self.current + i)
+            acc.append(token_types[i] == token.token_type)
 
+        return all(acc)
+    
     def check(self, token_type: TokenType) -> bool:
         if self.isAtEnd(): return False
         return self.peek().token_type == token_type

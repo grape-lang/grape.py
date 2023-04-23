@@ -23,12 +23,16 @@ comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term        -> factor ( ( "+" | "-" ) factor )* ;
 factor      -> unary ( ( "/" | "*" ) unary )* ;
 unary       -> ( "-" | "not" ) unary | call ;
-call        -> call | primary "(" expression* ")" ;
+call        -> primary ( "(" arguments? ")" )* ;
 primary     -> literal | grouping ;
 
-literal     -> NUMBER | STRING | ATOM | list | tuple | bool | IDENTIFIER ;
-bool        -> "true" | "false"
-list        -> "[" expression | ( expression "," )* "]" ;
-tuple       -> "(" expression* ")" ;
+arguments   -> collection ;
+
+literal     -> NUMBER | TEXT | ATOM | bool | list | tuple | IDENTIFIER ;
+bool        -> "true" | "false" ;
+list        -> "[" collection "]" ;
+tuple       -> "{" collection "}" ;
 grouping    -> "(" expression ")" ;
+
+collection  -> expression ("," expression)* ;
 ```

@@ -41,6 +41,16 @@ class Binary(Expr):
     def __str__(self) -> str:
         return parenthesize(self.operator.lexeme + " " + str(self.left) + " " + str(self.right))
     
+class Call(Expr):
+    def __init__(self, callee: Expr, closingParenToken: Token, arguments: list[Expr]):
+        self.callee = callee
+        self.closingParenToken = closingParenToken
+        self.arguments = arguments
+
+    def __str__(self) -> str:
+        arguments = [str(argument) for argument in self.arguments]
+        return " ( call " + str(self.callee) + " with args " + ", ".join(arguments) + " ) "
+    
 class Grouping(Expr):
     def __init__(self, expression: Expr):
         self.expression = expression

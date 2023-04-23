@@ -6,12 +6,19 @@ from syntax.tokens import *
 from syntax.stmt import Stmt
 from syntax.expr import Expr
 
+from syntax.callable import Callable
+from runtime.native import *
+
 import syntax.stmt as stmt
 import syntax.expr as expr
 
 class Interpreter():
     def __init__(self, grape, statements: list[Stmt]):
-        self.env = Env()
+        self.globalEnv = Env()
+        self.globalEnv.define_builtin(printFn.name, printFn)
+        self.globalEnv.define_builtin(exitFn.name, exitFn)
+
+        self.env = self.globalEnv
         self.errorHandler = grape.errorHandler
         self.statements = statements
 
@@ -25,6 +32,9 @@ class Interpreter():
 
         except UndefinedError as e:
             self.errorHandler.report("Runtime error", e.name.line, e.name.col, quote(e.name.lexeme), e.message)
+
+        except ArgumentError as e:
+            self.errorHandler.report("Argument error", e.token.line, e.token.col, quote(e.token.lexeme), e.message)
     
     def evaluateStatement(self, statement: Stmt):
         return self.evaluateExpression(statement.expression)
@@ -60,6 +70,9 @@ class Interpreter():
             
             case expr.Logical():
                 return self.evaluateLogical(expression.left, expression.operator, expression.right)
+            
+            case expr.Call():
+                return self.evaluateCall(expression.callee, expression.closingParenToken, expression.arguments)
 
             case expr.Unary():
                 return self.evaluateUnary(expression.operator, expression.right)
@@ -157,6 +170,19 @@ class Interpreter():
                     return left
                 else:
                     return self.evaluateExpression(right)
+
+    def evaluateCall(self, callee: Expr, closingParenToken: Token, arguments: list[Expr]):
+        function = self.evaluateExpression(callee)
+
+        if not isinstance(function, Callable):
+            raise TypeCheckError(closingParenToken, "Can only call functions.")
+
+        arguments = [self.evaluateExpression(expression) for expression in arguments]
+
+        if not len(arguments) in function.arity:
+            raise TypeCheckError(closingParenToken, "Expected " + function.arity + "arguments, but got " + len(arguments) + "." )
+
+        return function.call(self, closingParenToken, arguments)
 
     def evaluateUnary(self, operator: Token, right: Expr):
         right = self.evaluateExpression(right)

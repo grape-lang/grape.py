@@ -1,9 +1,3 @@
-x = 2
-
-y = if(x == 2) 3 else 4
-
-y = if(x == 2) do
-        3 
-    else
-        4
-    end
+x = 1
+exit()
+print(x)
