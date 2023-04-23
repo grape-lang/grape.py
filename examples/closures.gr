@@ -1,0 +1,27 @@
+// functions can return functions
+// which have access to the scope of their parent:
+// this is called a closure.
+fn person(name) do
+    fn() do
+        print("Hi, my name is " + name + "!")
+    end
+end
+
+person("Robin")()
+
+// functions are first-class citizens:
+// they can be passed around like normal variables.
+
+fn doSomething(fun) do
+    x = y = 4
+    fun(x, y)
+end
+
+output = doSomething(fn(a, b) do
+    a = 2 * a
+    b = 2 * b
+
+    a * b
+end)
+
+print(output)

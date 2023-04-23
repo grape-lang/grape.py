@@ -190,12 +190,12 @@ class Interpreter():
         return function.call(self, arguments, closingParenToken)
 
     def evaluateFunction(self, declaration):
-        function = Function(declaration)
+        function = Function(declaration, self.env)
         self.env.define(declaration.name, function)
         return function
 
     def evaluateLambda(self, declaration):
-        return Lambda(declaration)
+        return Lambda(declaration, self.env)
 
     def evaluateUnary(self, operator: Token, right: Expr):
         right = self.evaluateExpression(right)

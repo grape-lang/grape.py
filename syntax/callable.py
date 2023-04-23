@@ -23,22 +23,23 @@ class Builtin(Callable):
         return self.impl(arguments, errorToken)
 
 class Lambda(Callable):
-    def __init__(self, declaration: expr.Lambda):
+    def __init__(self, declaration: expr.Lambda, closure: Env):
+        self.closure = closure
         self.declaration = declaration
 
         arity = (len(declaration.params), )
         super().__init__("anonymous", arity)      
 
     def call(self, interpreter, arguments: list, errorToken: Token):
-        env = Env(interpreter.globalEnv)
+        env = Env(self.closure)
         for i in range(0, self.arity[0]):
             env.define(self.declaration.params[i], arguments[i])
 
         return interpreter.evaluateBlock(self.declaration.body, env)
 
 class Function(Lambda):
-    def __init__(self, declaration: expr.Function):
-        super().__init__(declaration)
+    def __init__(self, declaration: expr.Function, closure: Env):
+        super().__init__(declaration, closure)
         # Override the "anonymous" name field from Lambda
         self.name = declaration.name.lexeme
 
