@@ -1,0 +1,85 @@
+// Helper functions
+
+// For-loop implementation
+fn for(iteration, maxIterations, fun) do
+    if(iteration < maxIterations) do
+        fun(iteration)
+        for(iteration + 1, maxIterations, fun)
+    else
+      acc
+    end
+end
+
+// Helper function to run an anonymous function
+// an x amount of times.
+fn repeat(times, fun) do
+  for(0, times, fun, [])
+end
+
+// Actual implementation
+
+fn generate(initialState, iterations) do
+  generateAndPrintRows(0, iterations, initialState) 
+end
+
+fn generateAndPrintRows(i, iterations, prevRow) do
+  if(i < iterations) do
+    row = generateRow(prevRow)
+    printRow(row)
+  
+    generateAndPrintRows(i + 1, iterations, row)
+  end
+end
+
+fn generateRow(row) do
+  result = []
+
+  // First col
+  a = elem(row, -1)
+  b = leftMost = elem(row, 0)
+  c = elem(row, 1)
+  append(result, rule110(a, b, c))
+
+  // Middle cols
+  middleCols = generateMiddleCols(0, row, [], b, c) 
+  result = result + middleCols
+
+  // Last col
+  a = b
+  b = c
+  c = leftMost
+  append(result, rule110(a, b, c))
+end
+
+fn generateMiddleCols(i, row, acc, b, c) do
+  if(i < len(row)) do
+    a = b
+    b = c
+    c = elem(row, i + 1)
+    append(acc, rule110(a, b, c))
+
+    generateMiddleCols(i, row, acc, b, c)
+  else
+    acc
+  end
+end
+
+fn rule110(a, b, c) do
+  (not c and b) or (c and not (a and b))
+end
+
+fn printRow(row) do
+  repeat(len(row), fn(i) do
+    item = elem(row, i)
+    if(item) do
+        print("*")
+    else
+        print(" ")
+    end
+  end)
+  print("\n")
+end
+
+initialState = [false, false, false, false, false, false, false, false, false, false, true, false, false]
+generate(initialState, 1)
+

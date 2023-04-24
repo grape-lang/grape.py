@@ -266,7 +266,6 @@ class Parser():
         
         if self.match(TokenType.LEFT_PAREN): 
             expression = self.expression()
-            print(expression)
 
             self.expect(TokenType.RIGHT_PAREN, "Missing \")\" after expression.")
             return expr.Grouping(expression)

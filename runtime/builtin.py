@@ -24,7 +24,13 @@ def exitImpl(arguments: list, errorToken: Token):
 exitFn = Builtin("exit", (0, 1), exitImpl)
 
 def lenImpl(arguments: list, errorToken: Token) -> Decimal:
-    return round(Decimal(len(arguments[0])), maxDecimals)
+    collection = arguments[0]
+
+    if isinstance(collection, list):
+        return round(Decimal(len(collection)), maxDecimals)
+    else:
+        raise ArgumentError(errorToken, "len() expects a collection (list or tuple).")
+    
 
 lenFn = Builtin("len", (1, ), lenImpl)
 
@@ -35,7 +41,7 @@ def elemImpl(arguments: list, errorToken: Token) -> any:
     if isinstance(collection, list) and isinstance(index, Decimal):
         return collection[int(index)]
     else:
-        raise ArgumentError(errorToken, "elem() expects a list and an index (number).")
+        raise ArgumentError(errorToken, "elem() expects a collection (list or tuple) and an index (number).")
     
 elemFn = Builtin("elem", (2, ), elemImpl)
 
@@ -46,6 +52,6 @@ def appendImpl(arguments: list, errorToken: Token) -> any:
     if isinstance(collection, list):
         return collection.append(value)
     else:
-        raise ArgumentError(errorToken, "append() expects a list and a value to append to it")
+        raise ArgumentError(errorToken, "append() expects a collection (list or tuple) and a value to append to it")
 
 appendFn = Builtin("append", (2, ), appendImpl)

@@ -15,6 +15,7 @@ class Grape:
 
     def runFile(self, filename: str):
         source_code = open(filename, "r").read()
+        self.errorHandler.currentFile = filename
         self.run(source_code)
 
     def startREPL(self):

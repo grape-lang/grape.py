@@ -2,6 +2,7 @@ import runtime.term as term
 
 class ErrorHandler:
     hadError = False
+    currentFile = "unknown"
 
     def report(self, kind: str, line: int, col: int, location: str = "", message: str = "") -> str: 
         self.hadError = True
@@ -18,12 +19,15 @@ class ErrorHandler:
         return errorMessage
     
     def error(self, line: int, col: int, message: str) -> str:
-        header = "[line " + str(line) + ":" + str(col) + "]"
+        header = self.header(line, col)
         print(term.colors.FAIL + header + " " + message + term.colors.NORMAL)
     
     def warn(self, line: int, col: int, message: str) -> str: 
-        header = "[line " + str(line) + ":" + str(col) + "]"
+        header = self.header(line, col)
         warningMessage = message.lower()    
         
         print(term.colors.WARNING + header + " " + warningMessage + term.colors.NORMAL)
         return warningMessage
+    
+    def header(self, line: int, col: int) -> str:
+        return "[" + self.currentFile + ":" + str(line) + ":" + str(col) + "]"
