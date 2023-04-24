@@ -37,13 +37,13 @@ class Parser():
     
     def expression(self) -> Expr:
         if self.check_sequence([TokenType.IDENTIFIER, TokenType.EQUAL]): 
-            return self.variableDeclaration()
+            return self.variableDecl()
         
         if self.match(TokenType.FN):
             if self.match(TokenType.IDENTIFIER):
-                return self.functionDeclaration()
+                return self.functionDecl()
             else:
-                return self.lambdaDeclaration()
+                return self.lambdaExpr()
         
         if self.match(TokenType.IF):
             return self.conditionalIf()
@@ -54,7 +54,7 @@ class Parser():
         else:
             return self.logicOr()
             
-    def variableDeclaration(self) -> Expr:
+    def variableDecl(self) -> Expr:
         # Consumes the identifier. 
         # Needed because we use `check` and not `match` 
         # in the callee of this function.
@@ -67,12 +67,12 @@ class Parser():
         initializer = self.expression()
         return expr.VariableDecl(name, initializer)
     
-    def functionDeclaration(self) -> Expr:
+    def functionDecl(self) -> Expr:
         name = self.previous()
         (parameters, body) = self.parseFunction()
         return expr.Function(name, parameters, body)
     
-    def lambdaDeclaration(self) -> Expr:
+    def lambdaExpr(self) -> Expr:
         (parameters, body) = self.parseFunction()
         return expr.Lambda(parameters, body)
     
@@ -157,7 +157,7 @@ class Parser():
     def logicAnd(self) -> Expr:
         expression = self.equality()
 
-        while(self.match(TokenType.OR)):
+        while(self.match(TokenType.AND)):
             operator = self.previous()
             right = self.equality()
             expression = expr.Logical(expression, operator, right)
@@ -167,7 +167,7 @@ class Parser():
     def equality(self) -> Expr:
         expression = self.comparison()
 
-        while (self.match_multiple([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])):
+        while (self.match_either([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])):
             operator = self.previous()
             right = self.comparison()
 
@@ -178,7 +178,7 @@ class Parser():
     def comparison(self)-> Expr:
         expression = self.term()
 
-        while (self.match_multiple([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])):
+        while (self.match_either([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])):
             operator = self.previous()
             right = self.term()
 
@@ -189,7 +189,7 @@ class Parser():
     def term(self)-> Expr:
         expression = self.factor()
 
-        while (self.match_multiple([TokenType.MINUS, TokenType.PLUS])):
+        while (self.match_either([TokenType.MINUS, TokenType.PLUS])):
             operator = self.previous()
             right = self.factor()
 
@@ -200,7 +200,7 @@ class Parser():
     def factor(self) -> Expr:
         expression = self.unary()
 
-        while (self.match_multiple([TokenType.SLASH, TokenType.STAR])):
+        while (self.match_either([TokenType.SLASH, TokenType.STAR])):
             operator = self.previous()
             right = self.unary()
 
@@ -209,11 +209,11 @@ class Parser():
         return expression
     
     def unary(self) -> Expr:
-        if self.match_multiple([TokenType.NOT, TokenType.MINUS]):
+        if self.match_either([TokenType.NOT, TokenType.MINUS]):
             operator = self.previous()
             right = self.unary()
 
-            return Unary(operator, right)
+            return expr.Unary(operator, right)
         
         return self.call()
     
@@ -243,23 +243,30 @@ class Parser():
         if self.match(TokenType.TRUE): return expr.Literal(True)
         if self.match(TokenType.IDENTIFIER): return expr.VariableExpr(self.previous())
 
-        if self.match_multiple([TokenType.NUMBER, TokenType.STRING, TokenType.ATOM]):
+        if self.match_either([TokenType.NUMBER, TokenType.STRING, TokenType.ATOM]):
             return expr.Literal(self.previous().literal)
         
-        if self.match(TokenType.LEFT_BRACKET): 
-            items = self.collection()
+        if self.match(TokenType.LEFT_BRACKET):
+            if not self.check(TokenType.RIGHT_BRACKET):
+                items = self.collection()
+            else:
+                items = []
 
             self.expect(TokenType.RIGHT_BRACKET, "Missing \"]\" to close list.")
             return expr.List(items)
         
         if self.match(TokenType.LEFT_BRACE): 
-            items= self.collection()
+            if not self.check(TokenType.RIGHT_BRACE):
+                items = self.collection()
+            else:
+                items = []
 
             self.expect(TokenType.RIGHT_BRACE, "Missing \"}\" to close tuple.")
             return expr.Tuple(items)
         
         if self.match(TokenType.LEFT_PAREN): 
             expression = self.expression()
+            print(expression)
 
             self.expect(TokenType.RIGHT_PAREN, "Missing \")\" after expression.")
             return expr.Grouping(expression)
@@ -276,7 +283,7 @@ class Parser():
 
         return items
 
-    def match_multiple(self, token_types: list[TokenType]) -> bool:
+    def match_either(self, token_types: list[TokenType]) -> bool:
         for token_type in token_types:
             if self.match(token_type): return True
             

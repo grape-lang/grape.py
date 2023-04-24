@@ -1,0 +1,31 @@
+// Loop implementation.
+// Takes the current iteration (starts at 0), the max amount of iterations,
+// an anonymous function to call each cycle and an accumulator (usually an empty list).
+// The return value of the anonymous function is appended to the accumulator
+// at each iteration.
+fn for(iteration, maxIterations, fun, acc) do
+    if(iteration < maxIterations) do
+        result = fun(iteration)
+        acc = append(acc, result)
+
+        for(iteration + 1, maxIterations, fun, acc)
+    else
+      acc
+    end
+end
+
+// Helper function to run an anonymous function
+// an x amount of times.
+fn repeat(times, fun) do
+  for(0, times, fun, [])
+end
+
+// Helper function to map over an list.
+// It expects a list and an anonymous function
+// that transforms each item. The function takes an index (number)
+// and the current item. It should return the transformed item.
+fn map(list, fun) do
+  repeat(len(list), fn(i) do
+    fun(i, elem(list, i))
+  end)
+end

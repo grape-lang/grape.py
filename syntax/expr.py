@@ -110,7 +110,7 @@ class Unary(Expr):
         self.right = right
     
     def __str__(self) -> str:
-        return parenthesize(self.operator.lexeme + str(self.right))
+        return parenthesize(self.operator.lexeme + " " + str(self.right))
         
 class VariableExpr(Expr):
     def __init__(self, name: Token):

@@ -17,6 +17,8 @@ class Interpreter():
         self.globalEnv.define_builtin(printFn)
         self.globalEnv.define_builtin(exitFn)
         self.globalEnv.define_builtin(lenFn)
+        self.globalEnv.define_builtin(elemFn)
+        self.globalEnv.define_builtin(appendFn)
 
         self.env = self.globalEnv
         self.errorHandler = grape.errorHandler
@@ -72,10 +74,10 @@ class Interpreter():
                 return self.evaluateLogical(expression.left, expression.operator, expression.right)
             
             case expr.Call():
-                return self.evaluateCall(expression.callee, expression.closingParenToken, expression.arguments)
+                return self.evaluateFunctionCall(expression.callee, expression.closingParenToken, expression.arguments)
             
             case expr.Function():
-                return self.evaluateFunction(expression)
+                return self.evaluateFunctionDecl(expression)
 
             case expr.Lambda():
                 return self.evaluateLambda(expression)
@@ -133,6 +135,8 @@ class Interpreter():
                     return round(left + right, maxDecimals)
                 elif self.areBothText(left, right):
                     return left + right
+                elif self.areBothCollection(left, right):
+                    return left + right
                 else:
                     raise TypeCheckError(operator, "Operands must be two numbers or two strings.")
             case TokenType.GREATER:
@@ -176,7 +180,7 @@ class Interpreter():
                 else:
                     return self.evaluateExpression(right)
 
-    def evaluateCall(self, callee: Expr, closingParenToken: Token, arguments: list[Expr]):
+    def evaluateFunctionCall(self, callee: Expr, closingParenToken: Token, arguments: list[Expr]):
         function = self.evaluateExpression(callee)
 
         if not isinstance(function, Callable):
@@ -189,7 +193,7 @@ class Interpreter():
 
         return function.call(self, arguments, closingParenToken)
 
-    def evaluateFunction(self, declaration):
+    def evaluateFunctionDecl(self, declaration):
         function = Function(declaration, self.env)
         self.env.define(declaration.name, function)
         return function
@@ -232,6 +236,12 @@ class Interpreter():
 
     def isText(self, input: any) -> bool:
         return isinstance(input, str)
+
+    def areBothCollection(self, a: any, b: any) -> bool:
+        return self.isCollection(a) and self.isCollection(b)
+
+    def isCollection(self, input: any) -> bool:
+        return isinstance(input, list)
 
 class TypeCheckError(Exception):
     def __init__(self, token: Token, message: str):
