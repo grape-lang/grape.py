@@ -60,3 +60,25 @@ def appendImpl(arguments: list, errorToken: Token, interpreter) -> any:
         raise ArgumentError(errorToken, "append() expects a collection (list or tuple) and a value to append to it. Given: " + str(type(collection)))
 
 appendFn = Builtin("append", (2, ), appendImpl)
+
+def forImpl(arguments: list, errorToken: Token, interpreter) -> any:
+    end = arguments[0]
+    fun = arguments[1]
+    acc = arguments[2].copy()
+
+    if not isinstance(end, Decimal): 
+        raise ArgumentError(errorToken, "for() expects a number as it's 1st argument. Given: " + str(type(end)))
+
+
+    if not isinstance(fun, Callable): 
+        raise ArgumentError(errorToken, "for() expects a function as it's 2nd argument. Given: " + str(type(fun)))
+    
+    if not isinstance(acc, list): 
+        raise ArgumentError(errorToken, "for() expects a collection as it's 3rd argument. Given: " + str(type(acc)))
+
+    for i in range(0..end):
+        acc.append(fun.call(interpreter, [i], errorToken))
+
+    return acc
+
+forFn = Builtin("for", (2, ), forImpl)
