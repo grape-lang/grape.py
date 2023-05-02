@@ -39,7 +39,10 @@ def elemImpl(arguments: list, errorToken: Token) -> any:
     index = arguments[1]
 
     if isinstance(collection, list) and isinstance(index, Decimal):
-        return collection[int(index)]
+        if len(collection) > index:
+            return collection[int(index)]
+        else:
+            raise ArgumentError(errorToken, "index out of range. List has " + str(len(collection)) + " items and you tried to access " + str(int(index) + 1) + "th item.")
     else:
         raise ArgumentError(errorToken, "elem() expects a collection (list or tuple) and an index (number).")
     
@@ -50,8 +53,10 @@ def appendImpl(arguments: list, errorToken: Token) -> any:
     value = arguments[1]
 
     if isinstance(collection, list):
-        return collection.append(value)
+        collection = collection.copy()
+        collection.append(value)
+        return collection
     else:
-        raise ArgumentError(errorToken, "append() expects a collection (list or tuple) and a value to append to it")
+        raise ArgumentError(errorToken, "append() expects a collection (list or tuple) and a value to append to it. Given: " + str(type(collection)))
 
 appendFn = Builtin("append", (2, ), appendImpl)
