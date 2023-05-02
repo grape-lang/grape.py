@@ -19,6 +19,7 @@ class Interpreter():
         self.globalEnv.define_builtin(lenFn)
         self.globalEnv.define_builtin(elemFn)
         self.globalEnv.define_builtin(appendFn)
+        self.globalEnv.define_builtin(forFn)
 
         self.env = self.globalEnv
         self.errorHandler = grape.errorHandler

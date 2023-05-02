@@ -76,9 +76,9 @@ def forImpl(arguments: list, errorToken: Token, interpreter) -> any:
     if not isinstance(acc, list): 
         raise ArgumentError(errorToken, "for() expects a collection as it's 3rd argument. Given: " + str(type(acc)))
 
-    for i in range(0..end):
+    for i in range(0, int(end)):
         acc.append(fun.call(interpreter, [i], errorToken))
 
     return acc
 
-forFn = Builtin("for", (2, ), forImpl)
+forFn = Builtin("for", (3, ), forImpl)
