@@ -3,7 +3,7 @@ from decimal import *
 from syntax.tokens import *
 from syntax.callable import *
 
-def printImpl(arguments: list, errorToken: Token) -> str:
+def printImpl(arguments: list, errorToken: Token, interpreter) -> str:
     string = str(arguments[0])
 
     print(string.replace('\\n', '\n'), end='')
@@ -11,7 +11,7 @@ def printImpl(arguments: list, errorToken: Token) -> str:
 
 printFn = Builtin("print", (1, ), printImpl)
 
-def exitImpl(arguments: list, errorToken: Token):
+def exitImpl(arguments: list, errorToken: Token, interpreter):
     if len(arguments) == 1:
         exitCode = arguments[0] 
         if isinstance(exitCode, Decimal):
@@ -23,7 +23,7 @@ def exitImpl(arguments: list, errorToken: Token):
 
 exitFn = Builtin("exit", (0, 1), exitImpl)
 
-def lenImpl(arguments: list, errorToken: Token) -> Decimal:
+def lenImpl(arguments: list, errorToken: Token, interpreter) -> Decimal:
     collection = arguments[0]
 
     if isinstance(collection, list):
@@ -34,7 +34,7 @@ def lenImpl(arguments: list, errorToken: Token) -> Decimal:
 
 lenFn = Builtin("len", (1, ), lenImpl)
 
-def elemImpl(arguments: list, errorToken: Token) -> any:
+def elemImpl(arguments: list, errorToken: Token, interpreter) -> any:
     collection = arguments[0]
     index = arguments[1]
 
@@ -48,7 +48,7 @@ def elemImpl(arguments: list, errorToken: Token) -> any:
     
 elemFn = Builtin("elem", (2, ), elemImpl)
 
-def appendImpl(arguments: list, errorToken: Token) -> any:
+def appendImpl(arguments: list, errorToken: Token, interpreter) -> any:
     collection = arguments[0]
     value = arguments[1]
 

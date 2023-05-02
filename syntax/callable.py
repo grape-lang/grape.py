@@ -20,7 +20,7 @@ class Builtin(Callable):
         super().__init__(name, arity)
 
     def call(self, interpreter, arguments: list, errorToken: Token):
-        return self.impl(arguments, errorToken)
+        return self.impl(arguments, errorToken, interpreter)
 
 class Lambda(Callable):
     def __init__(self, declaration: expr.Lambda, closure: Env):
