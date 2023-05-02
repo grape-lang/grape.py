@@ -6,10 +6,18 @@ from syntax.callable import *
 def printImpl(arguments: list, errorToken: Token, interpreter) -> str:
     string = str(arguments[0])
 
-    print(string.replace('\\n', '\n'), end='')
+    print(string.replace('\\n', '\n'))
     return string
 
 printFn = Builtin("print", (1, ), printImpl)
+
+def writeImpl(arguments: list, errorToken: Token, interpreter) -> str:
+    string = str(arguments[0])
+
+    print(string.replace('\\n', '\n'), end='')
+    return string
+
+writeFn = Builtin("write", (1, ), writeImpl)
 
 def exitImpl(arguments: list, errorToken: Token, interpreter):
     if len(arguments) == 1:
