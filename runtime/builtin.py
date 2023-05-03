@@ -70,22 +70,22 @@ def appendImpl(arguments: list, errorToken: Token, interpreter) -> any:
 appendFn = Builtin("append", (2, ), appendImpl)
 
 def forImpl(arguments: list, errorToken: Token, interpreter) -> any:
-    end = arguments[0]
-    fun = arguments[1]
-    acc = arguments[2].copy()
+    begin = arguments[0]
+    end = arguments[1]
+    fun = arguments[2]
+    acc = []
+
+    if not isinstance(begin, Decimal): 
+        raise ArgumentError(errorToken, "for() expects a number as it's 1st argument. Given: " + str(type(begin)))
 
     if not isinstance(end, Decimal): 
-        raise ArgumentError(errorToken, "for() expects a number as it's 1st argument. Given: " + str(type(end)))
-
-
-    if not isinstance(fun, Callable): 
-        raise ArgumentError(errorToken, "for() expects a function as it's 2nd argument. Given: " + str(type(fun)))
+        raise ArgumentError(errorToken, "for() expects a number as it's 2nd argument. Given: " + str(type(end)))
     
-    if not isinstance(acc, list): 
-        raise ArgumentError(errorToken, "for() expects a collection as it's 3rd argument. Given: " + str(type(acc)))
+    if not isinstance(fun, Callable): 
+        raise ArgumentError(errorToken, "for() expects a function as it's 3rd argument. Given: " + str(type(fun)))
 
-    for i in range(0, int(end)):
-        acc.append(fun.call(interpreter, [i], errorToken))
+    for i in range(int(begin), int(end)):
+        acc.append(fun.call(interpreter, [Decimal(i)], errorToken))
 
     return acc
 
