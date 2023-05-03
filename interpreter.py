@@ -15,13 +15,13 @@ class Interpreter():
     def __init__(self, grape, statements: list[Stmt]):
         self.globalEnv = Env()
         self.globalEnv.define_builtin(printFn)
+        self.globalEnv.define_builtin(writeFn)
         self.globalEnv.define_builtin(exitFn)
         self.globalEnv.define_builtin(lenFn)
         self.globalEnv.define_builtin(elemFn)
         self.globalEnv.define_builtin(appendFn)
         self.globalEnv.define_builtin(forFn)
-        self.globalEnv.define_builtin(writeFn)
-        self.globalEnv.define_builtin(accumulateFn)
+        self.globalEnv.define_builtin(accumulateFn)        
 
         self.env = self.globalEnv
         self.errorHandler = grape.errorHandler
