@@ -1,85 +1,106 @@
-// Helper functions
+// --- Begin Tools ---
 
-// For-loop implementation
-fn for(iteration, maxIterations, fun) do
-    if(iteration < maxIterations) do
-        fun(iteration)
-        for(iteration + 1, maxIterations, fun)
-    else
-      acc
-    end
+fn iter(fun, arr) do
+    for(0, len(arr), fn(i) do
+        fun(elem(arr, i))
+    end)
 end
 
-// Helper function to run an anonymous function
-// an x amount of times.
+fn enumerate(fun, arr) do
+    for(0, len(arr), fn(i) do
+        fun(i, elem(arr, i))
+    end)
+end
+
 fn repeat(times, fun) do
   for(0, times, fun, [])
 end
 
-// Actual implementation
-
-fn generate(initialState, iterations) do
-  generateAndPrintRows(0, iterations, initialState) 
-end
-
-fn generateAndPrintRows(i, iterations, prevRow) do
-  if(i < iterations) do
-    row = generateRow(prevRow)
-    printRow(row)
-  
-    generateAndPrintRows(i + 1, iterations, row)
-  end
-end
-
-fn generateRow(row) do
-  result = []
-
-  // First col
-  a = elem(row, -1)
-  b = leftMost = elem(row, 0)
-  c = elem(row, 1)
-  append(result, rule110(a, b, c))
-
-  // Middle cols
-  middleCols = generateMiddleCols(0, row, [], b, c) 
-  result = result + middleCols
-
-  // Last col
-  a = b
-  b = c
-  c = leftMost
-  append(result, rule110(a, b, c))
-end
-
-fn generateMiddleCols(i, row, acc, b, c) do
-  if(i < len(row)) do
-    a = b
-    b = c
-    c = elem(row, i + 1)
-    append(acc, rule110(a, b, c))
-
-    generateMiddleCols(i, row, acc, b, c)
-  else
-    acc
-  end
-end
-
-fn rule110(a, b, c) do
-  (not c and b) or (c and not (a and b))
-end
-
-fn printRow(row) do
-  repeat(len(row), fn(i) do
-    item = elem(row, i)
-    if(item) do
-        print("*")
-    else
-        print(" ")
+fn put(arr, i, elm) do
+    fun = fn(j, arr_elm) do
+        if (i == j) do
+            elm
+        else
+            arr_elm
+        end
     end
-  end)
-  print("\n")
+
+    enumerate(fun, arr)
 end
 
-initialState = [false, false, false, false, false, false, false, false, false, false, true, false, false]
-generate(initialState, 1)
+// --- End Tools ---
 
+// --- Begin Specific Tools ---
+fn print_arr(arr) do
+    iter(fn(elm) do
+        if (elm) do
+            write( "1" )
+            write( " " )
+        else
+            write( "0" )
+            write( " " )
+        end
+    end, arr)
+    print("")
+end
+// --- End Specific Tools ---
+
+// --- Begin Calculation Code ---
+
+// Ensure (numbers in print) == len(buffer)
+print( "P1 40 40" )
+buffer = for(0, 40, fn(i) do
+    false
+end)
+
+buffer = put(buffer, 39, true)
+
+accumulate(0, len(buffer), buffer, fn(tick, buffer) do
+    tmp_buffer = for(0, len(buffer), fn(i) do
+        if (i == 0) do
+            elem(buffer, 0) or elem(buffer, 1)
+        else if (i == len(buffer)-1) do
+            elem(buffer, len(buffer)-1)
+        else
+            x = elem(buffer, i-1)
+            y = elem(buffer, i)
+            z = elem(buffer, i+1)
+
+            if (x) do
+                if (y) do
+                    if (z) do
+                        false
+                    else
+                        true
+                    end
+                else
+                    if (z) do
+                        true
+                    else
+                        false
+                    end
+                end
+            else
+                if (y) do
+                    if (z) do
+                        true
+                    else
+                        true
+                    end
+                else
+                    if (z) do
+                        true
+                    else
+                        false
+                    end
+                end
+            end
+        end
+        end
+    end)
+
+    print_arr( tmp_buffer )
+    tmp_buffer
+end)
+
+// --- End Calculation Code ---
