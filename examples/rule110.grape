@@ -1,4 +1,11 @@
-// --- Begin Tools ---
+// ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+// ;; Written by MSB                               ;;
+// ;; Usage: ./grape.py rule110.grape > output.pbm ;;
+// ;; This will generate an image file containing  ;;
+// ;; an image of a rule110 triangle.              ;;
+// ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+// --- Begin Generic Tools ---
 
 fn iter(fun, arr) do
     for(0, len(arr), fn(i) do
@@ -28,7 +35,7 @@ fn put(arr, i, elm) do
     enumerate(fun, arr)
 end
 
-// --- End Tools ---
+// --- End Generic Tools ---
 
 // --- Begin Specific Tools ---
 fn print_arr(arr) do
@@ -56,6 +63,7 @@ end)
 buffer = put(buffer, 39, true)
 
 accumulate(0, len(buffer), buffer, fn(tick, buffer) do
+    print_arr( buffer )
     tmp_buffer = for(0, len(buffer), fn(i) do
         if (i == 0) do
             elem(buffer, 0) or elem(buffer, 1)
@@ -99,7 +107,6 @@ accumulate(0, len(buffer), buffer, fn(tick, buffer) do
         end
     end)
 
-    print_arr( tmp_buffer )
     tmp_buffer
 end)
 
