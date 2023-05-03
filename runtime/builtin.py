@@ -90,3 +90,25 @@ def forImpl(arguments: list, errorToken: Token, interpreter) -> any:
     return acc
 
 forFn = Builtin("for", (3, ), forImpl)
+
+def accumulateImpl(arguments: list, errorToken: Token, interpreter) -> any:
+    begin = arguments[0]
+    end = arguments[1]
+    acc = arguments[2]
+    fun = arguments[3]
+
+    if not isinstance(begin, Decimal): 
+        raise ArgumentError(errorToken, "for() expects a number as it's 1st argument. Given: " + str(type(begin)))
+
+    if not isinstance(end, Decimal): 
+        raise ArgumentError(errorToken, "for() expects a number as it's 2nd argument. Given: " + str(type(end)))
+
+    if not isinstance(fun, Callable): 
+        raise ArgumentError(errorToken, "for() expects a function as it's 3rd argument. Given: " + str(type(fun)))
+
+    for i in range(int(begin), int(end)):
+        acc = fun.call(interpreter, [Decimal(i), acc], errorToken)
+
+    return acc
+
+accumulateFn = Builtin("accumulate", (4, ), accumulateImpl)
