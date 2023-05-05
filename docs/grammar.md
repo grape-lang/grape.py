@@ -1,4 +1,5 @@
-# Grammar
+Grammar
+=======
 
 This is the grammar for parsing programs in the Grape Programming Language.
 
